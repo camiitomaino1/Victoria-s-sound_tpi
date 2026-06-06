@@ -67,6 +67,7 @@ const Products = () => {
         {filteredProducts.map((product) => (
           <Col key={product.id}>
             <ProductCard
+              id={product.id}
               nombre={product.nombre}
               categoria={product.categoria}
               precio={product.precio}
