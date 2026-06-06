@@ -1,14 +1,19 @@
 import { useContext } from 'react'
-import { Container, Table, Badge, Alert } from 'react-bootstrap'
+import { Container, Table, Badge, Alert, Button } from 'react-bootstrap'
 import { CartContext } from '../context/CartContext'
 
 const Cart = () => {
 
-  // Connect to CartContext to read the cart state
-  const { cart } = useContext(CartContext)
+  // Connect to CartContext to read cart and use removeFromCart
+  const { cart, removeFromCart } = useContext(CartContext)
 
   // Calculate total number of items across all products
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0)
+
+  // Handler for the remove button
+  const handleRemove = (id) => {
+    removeFromCart(id)
+  }
 
   return (
     <Container className="mt-4">
@@ -30,6 +35,7 @@ const Cart = () => {
                 <th>Precio unitario</th>
                 <th>Cantidad</th>
                 <th>Subtotal</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -42,6 +48,16 @@ const Cart = () => {
                   <td>${item.precio.toLocaleString()}</td>
                   <td>{item.quantity}</td>
                   <td>${(item.precio * item.quantity).toLocaleString()}</td>
+                  <td>
+                    {/* Remove button: passes the item id to handleRemove */}
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleRemove(item.id)}
+                    >
+                      Eliminar
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>
