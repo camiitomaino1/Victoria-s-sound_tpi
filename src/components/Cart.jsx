@@ -4,15 +4,23 @@ import { CartContext } from '../context/CartContext'
 
 const Cart = () => {
 
-  // Connect to CartContext to read cart and use removeFromCart
-  const { cart, removeFromCart } = useContext(CartContext)
+  // Connect to CartContext
+  const { cart, removeFromCart, clearCart } = useContext(CartContext)
 
   // Calculate total number of items across all products
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0)
 
+  // Calculate total price across all products
+  const totalPrice = cart.reduce((total, item) => total + item.precio * item.quantity, 0)
+
   // Handler for the remove button
   const handleRemove = (id) => {
     removeFromCart(id)
+  }
+
+  // Handler for the clear cart button
+  const handleClearCart = () => {
+    clearCart()
   }
 
   return (
@@ -64,9 +72,18 @@ const Cart = () => {
           </Table>
 
           {/* Cart summary */}
-          <p className="text-muted">
-            Total de productos: <strong>{totalItems}</strong>
-          </p>
+          <div className="d-flex flex-column align-items-end gap-2">
+            <p className="text-muted mb-0">
+              Total de productos: <strong>{totalItems}</strong>
+            </p>
+            <h5>
+              Total de compra: <strong>${totalPrice.toLocaleString()}</strong>
+            </h5>
+            {/* Clear cart button */}
+            <Button variant="outline-danger" onClick={handleClearCart}>
+              Vaciar carrito
+            </Button>
+          </div>
         </>
       )}
     </Container>

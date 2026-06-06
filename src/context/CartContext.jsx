@@ -28,11 +28,17 @@ export const CartProvider = ({ children }) => {
     setCart(cart.filter((item) => item.id !== id))
   }
 
+  // Clear all products from the cart
+  const clearCart = () => {
+    setCart([])
+  }
+
   // Values and functions available to all components
   const value = {
     cart,
     addToCart,
-    removeFromCart
+    removeFromCart,
+    clearCart
   }
 
   return (
