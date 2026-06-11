@@ -1,9 +1,17 @@
-import { useState } from 'react'
-import { Container, Row, Col, Form, ButtonGroup, Button } from 'react-bootstrap'
-import productsData from '../data/productsData'
+import { useState, useEffect } from 'react'
+import { Container, Row, Col, Form, ButtonGroup, Button, Spinner, Alert } from 'react-bootstrap'
 import ProductCard from './ProductCard'
 
 const Products = () => {
+
+  // State for products fetched from the API
+  const [products, setProducts] = useState([])
+
+  // State for loading indicator
+  const [loading, setLoading] = useState(true)
+
+  // State for error handling
+  const [error, setError] = useState(null)
 
   // State for the search input
   const [search, setSearch] = useState('')
@@ -11,8 +19,32 @@ const Products = () => {
   // State for the selected category filter
   const [selectedCategory, setSelectedCategory] = useState('Todas')
 
-  // Extract unique categories from productsData and add "Todas" at the beginning
-  const categories = ['Todas', ...new Set(productsData.map((p) => p.categoria))]
+  // Fetch products from the API when the component mounts
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/products')
+
+        // If the server responded with an error status, throw an error
+        if (!response.ok) {
+          throw new Error('Error al obtener los productos')
+        }
+
+        const data = await response.json()
+        setProducts(data)
+      } catch (error) {
+        setError(error.message)
+      } finally {
+        // Always stop the loading indicator, whether it succeeded or failed
+        setLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [])
+
+  // Extract unique categories from the fetched products and add "Todas"
+  const categories = ['Todas', ...new Set(products.map((p) => p.categoria))]
 
   // Handler for search input changes
   const handleSearchChange = (e) => {
@@ -25,11 +57,32 @@ const Products = () => {
   }
 
   // Apply both filters combined: search and category
-  const filteredProducts = productsData.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     const matchesSearch = product.nombre.toLowerCase().includes(search.toLowerCase())
     const matchesCategory = selectedCategory === 'Todas' || product.categoria === selectedCategory
     return matchesSearch && matchesCategory
   })
+
+  // Show loading spinner while fetching
+  if (loading) {
+    return (
+      <Container className="mt-5 text-center">
+        <Spinner animation="border" variant="dark" />
+        <p className="mt-3 text-muted">Cargando productos...</p>
+      </Container>
+    )
+  }
+
+  // Show error message if the fetch failed
+  if (error) {
+    return (
+      <Container className="mt-4">
+        <Alert variant="danger">
+          No se pudieron cargar los productos. Verificá que el servidor esté funcionando.
+        </Alert>
+      </Container>
+    )
+  }
 
   return (
     <Container className="mt-4">
@@ -69,9 +122,11 @@ const Products = () => {
             <ProductCard
               id={product.id}
               nombre={product.nombre}
+              marca={product.marca}
               categoria={product.categoria}
               precio={product.precio}
               descripcion={product.descripcion}
+              imagen={product.imagen}
             />
           </Col>
         ))}
