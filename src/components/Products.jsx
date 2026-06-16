@@ -56,8 +56,18 @@ const Products = () => {
 
   // Apply both filters combined: search and category
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.nombre.toLowerCase().includes(search.toLowerCase())
-    const matchesCategory = selectedCategory === 'Todas' || product.categoria === selectedCategory
+    const term = search.toLowerCase()
+  
+    const matchesSearch =
+      product.nombre.toLowerCase().includes(term) ||
+      product.categoria.toLowerCase().includes(term) ||
+      product.marca.toLowerCase().includes(term) ||
+      product.descripcion.toLowerCase().includes(term)
+  
+    const matchesCategory =
+      selectedCategory === 'Todas' ||
+      product.categoria === selectedCategory
+  
     return matchesSearch && matchesCategory
   })
 
