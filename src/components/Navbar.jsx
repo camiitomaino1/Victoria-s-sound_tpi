@@ -1,15 +1,28 @@
 import { useContext } from 'react'
-import { Link } from 'react-router-dom'
-import { Navbar as BsNavbar, Nav, Container, Badge } from 'react-bootstrap'
+import { Link, useNavigate } from 'react-router-dom'
+import { Navbar as BsNavbar, Nav, Container, Badge, NavDropdown } from 'react-bootstrap'
 import { CartContext } from '../context/CartContext'
+import { AuthContext } from '../context/AuthContext'
 
 const Navbar = () => {
 
-  // Connect to CartContext to read the cart state
+  // Get cart state from CartContext
   const { cart } = useContext(CartContext)
 
-  // Calculate total number of items across all products
+  // Get user and logout function from AuthContext
+  const { user, logout } = useContext(AuthContext)
+
+  // Hook to redirect after logout
+  const navigate = useNavigate()
+
+  // Calculate total number of items in the cart
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0)
+
+  // Handler for logout button
+  const handleLogout = () => {
+    logout()
+    navigate('/')
+  }
 
   return (
     <BsNavbar bg="dark" variant="dark" expand="lg">
@@ -17,7 +30,7 @@ const Navbar = () => {
         <BsNavbar.Brand as={Link} to="/">🎸 Victoria's Sound</BsNavbar.Brand>
         <BsNavbar.Toggle aria-controls="main-nav" />
         <BsNavbar.Collapse id="main-nav">
-          <Nav className="ms-auto">
+          <Nav className="ms-auto align-items-center">
             <Nav.Link as={Link} to="/">Inicio</Nav.Link>
             <Nav.Link as={Link} to="/products">Productos</Nav.Link>
 
@@ -25,14 +38,29 @@ const Navbar = () => {
             <Nav.Link as={Link} to="/cart">
               Carrito{' '}
               {totalItems > 0 && (
-                <Badge bg="danger" pill>
-                  {totalItems}
-                </Badge>
+                <Badge bg="danger" pill>{totalItems}</Badge>
               )}
             </Nav.Link>
 
-            <Nav.Link as={Link} to="/login">Iniciar sesión</Nav.Link>
-            <Nav.Link as={Link} to="/register">Registrarse</Nav.Link>
+            {/* Show user menu if logged in, otherwise show login and register links */}
+            {user ? (
+              <NavDropdown
+                title={<span>👤 {user.nombre}</span>}
+                id="user-dropdown"
+                align="end"
+              >
+                {/* Logout option inside the dropdown */}
+                <NavDropdown.Item onClick={handleLogout}>
+                  Cerrar sesión
+                </NavDropdown.Item>
+              </NavDropdown>
+            ) : (
+              <>
+                <Nav.Link as={Link} to="/login">Iniciar sesión</Nav.Link>
+                <Nav.Link as={Link} to="/register">Registrarse</Nav.Link>
+              </>
+            )}
+
           </Nav>
         </BsNavbar.Collapse>
       </Container>
