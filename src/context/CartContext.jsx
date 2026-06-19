@@ -33,12 +33,33 @@ export const CartProvider = ({ children }) => {
     setCart([])
   }
 
+  // Increase the quantity of a specific product by 1
+const increaseQuantity = (id) => {
+  setCart(cart.map((item) =>
+    item.id === id
+      ? { ...item, quantity: item.quantity + 1 }
+      : item
+  ))
+}
+
+// Decrease the quantity of a specific product by 1
+// Quantity never goes below 1 here; reaching 0 is handled in the UI with a removal confirmation
+const decreaseQuantity = (id) => {
+  setCart(cart.map((item) =>
+    item.id === id && item.quantity > 1
+      ? { ...item, quantity: item.quantity - 1 }
+      : item
+  ))
+}
+
   // Values and functions available to all components
   const value = {
     cart,
     addToCart,
     removeFromCart,
-    clearCart
+    clearCart,
+    increaseQuantity,   
+    decreaseQuantity    
   }
 
   return (
