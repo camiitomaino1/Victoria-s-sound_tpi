@@ -1,23 +1,25 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import Home from "./components/Home";
-import Products from "./components/Products";
-import Login from "./components/Login";
-import Register from "./components/Register";
-import Cart from "./components/Cart";
-import PrivateRoute from "./components/PrivateRoute";
-import OrderSummary from "./components/OrderSummary";
-import AdminRoute from "./components/AdminRoute";
-import AdminPanel from "./components/AdminPanel";
-import SysAdminRoute from "./components/SysAdminRoute";
-import SysAdminPanel from "./components/SysAdminPanel";
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Navbar from './components/Navbar'
+import Footer from './components/Footer'
+import Home from './components/Home'
+import Products from './components/Products'
+import Login from './components/Login'
+import Register from './components/Register'
+import Cart from './components/Cart'
+import OrderSummary from './components/OrderSummary'
+import AdminPanel from './components/AdminPanel'
+import SysAdminPanel from './components/SysAdminPanel'
+import OrdersHistory from './components/OrdersHistory'
+import PrivateRoute from './components/PrivateRoute'
+import AdminRoute from './components/AdminRoute'
+import SysAdminRoute from './components/SysAdminRoute'
 
 const App = () => {
   return (
     <BrowserRouter>
       <Navbar />
       <Routes>
+
         {/* Public routes */}
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<Products />} />
@@ -42,6 +44,18 @@ const App = () => {
             </PrivateRoute>
           }
         />
+
+        {/* Order history: any authenticated user */}
+        <Route
+          path="/mis-pedidos"
+          element={
+            <PrivateRoute>
+              <OrdersHistory />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Admin panel: admin and sysadmin only */}
         <Route
           path="/admin"
           element={
@@ -50,6 +64,8 @@ const App = () => {
             </AdminRoute>
           }
         />
+
+        {/* Users management: sysadmin only */}
         <Route
           path="/admin/users"
           element={
@@ -58,10 +74,11 @@ const App = () => {
             </SysAdminRoute>
           }
         />
+
       </Routes>
       <Footer />
     </BrowserRouter>
-  );
-};
+  )
+}
 
-export default App;
+export default App
