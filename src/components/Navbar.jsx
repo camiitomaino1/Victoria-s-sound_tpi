@@ -1,44 +1,63 @@
-import { useContext } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Navbar as BsNavbar, Nav, Container, Badge, NavDropdown } from 'react-bootstrap'
-import { CartContext } from '../context/CartContext'
-import { AuthContext } from '../context/AuthContext'
+import { useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Navbar as BsNavbar,
+  Nav,
+  Container,
+  Badge,
+  NavDropdown,
+} from "react-bootstrap";
+import { CartContext } from "../context/CartContext";
+import { AuthContext } from "../context/AuthContext";
 
 const Navbar = () => {
+  const { cart } = useContext(CartContext);
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const { cart } = useContext(CartContext)
-  const { user, logout } = useContext(AuthContext)
-  const navigate = useNavigate()
-
-  const totalItems = cart.reduce((total, item) => total + item.quantity, 0)
+  const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
 
   const handleLogout = () => {
-    logout()
-    navigate('/')
-  }
+    logout();
+    navigate("/");
+  };
 
   return (
     <BsNavbar bg="dark" variant="dark" expand="lg">
       <Container>
-        <BsNavbar.Brand as={Link} to="/">🎸 Victoria's Sound</BsNavbar.Brand>
+        <BsNavbar.Brand as={Link} to="/">
+          🎸 Victoria's Sound
+        </BsNavbar.Brand>
         <BsNavbar.Toggle aria-controls="main-nav" />
         <BsNavbar.Collapse id="main-nav">
           <Nav className="ms-auto align-items-center">
-            <Nav.Link as={Link} to="/">Inicio</Nav.Link>
-            <Nav.Link as={Link} to="/products">Productos</Nav.Link>
+            <Nav.Link as={Link} to="/">
+              Inicio
+            </Nav.Link>
+            <Nav.Link as={Link} to="/products">
+              Productos
+            </Nav.Link>
 
             <Nav.Link as={Link} to="/cart">
-              <i className="bi bi-cart3 fs-5"></i>
-              {' '}
+              <i className="bi bi-cart3 fs-5"></i>{" "}
               {totalItems > 0 && (
-                <Badge bg="danger" pill>{totalItems}</Badge>
+                <Badge bg="danger" pill>
+                  {totalItems}
+                </Badge>
               )}
             </Nav.Link>
 
             {/* Admin panel link, only visible for admin and sysadmin */}
-            {user && (user.role === 'admin' || user.role === 'sysadmin') && (
+            {user && (user.role === "admin" || user.role === "sysadmin") && (
               <Nav.Link as={Link} to="/admin">
                 <i className="bi bi-gear-fill"></i> Panel Admin
+              </Nav.Link>
+            )}
+
+            {/* Sysadmin users management link, only visible for sysadmin */}
+            {user && user.role === "sysadmin" && (
+              <Nav.Link as={Link} to="/admin/users">
+                <i className="bi bi-people-fill"></i> Usuarios
               </Nav.Link>
             )}
 
@@ -54,16 +73,19 @@ const Navbar = () => {
               </NavDropdown>
             ) : (
               <>
-                <Nav.Link as={Link} to="/login">Iniciar sesión</Nav.Link>
-                <Nav.Link as={Link} to="/register">Registrarse</Nav.Link>
+                <Nav.Link as={Link} to="/login">
+                  Iniciar sesión
+                </Nav.Link>
+                <Nav.Link as={Link} to="/register">
+                  Registrarse
+                </Nav.Link>
               </>
             )}
-
           </Nav>
         </BsNavbar.Collapse>
       </Container>
     </BsNavbar>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

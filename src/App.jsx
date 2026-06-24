@@ -10,6 +10,8 @@ import PrivateRoute from "./components/PrivateRoute";
 import OrderSummary from "./components/OrderSummary";
 import AdminRoute from "./components/AdminRoute";
 import AdminPanel from "./components/AdminPanel";
+import SysAdminRoute from "./components/SysAdminRoute";
+import SysAdminPanel from "./components/SysAdminPanel";
 
 const App = () => {
   return (
@@ -46,6 +48,14 @@ const App = () => {
             <AdminRoute>
               <AdminPanel />
             </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <SysAdminRoute>
+              <SysAdminPanel />
+            </SysAdminRoute>
           }
         />
       </Routes>
