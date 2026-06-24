@@ -4,47 +4,26 @@ import { AuthContext } from '../context/AuthContext'
 
 const SysAdminPanel = () => {
 
-  // Get the token to authenticate requests
   const { token } = useContext(AuthContext)
 
-  // State for the list of users
   const [users, setUsers] = useState([])
-
-  // Loading state for the initial fetch
   const [loading, setLoading] = useState(true)
-
-  // Error state for the initial fetch
   const [error, setError] = useState(null)
-
-  // Feedback message after create/edit/delete
   const [feedback, setFeedback] = useState(null)
-
-  // Controls whether the edit modal is visible
   const [showEditModal, setShowEditModal] = useState(false)
-
-  // Controls whether the delete confirmation modal is visible
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-
-  // Stores the user being edited
   const [editingUser, setEditingUser] = useState(null)
-
-  // Stores the user selected for deletion
   const [userToDelete, setUserToDelete] = useState(null)
-
-  // Loading state while saving or deleting
   const [saving, setSaving] = useState(false)
-
-  // Form fields for the edit modal
+  const [showInactive, setShowInactive] = useState(false)
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
     role: 'user'
   })
 
-  // Available roles
   const roleOptions = ['user', 'admin', 'sysadmin']
 
-  // Returns a Bootstrap badge color depending on the user role
   const getRoleVariant = (role) => {
     const variants = {
       user: 'secondary',
@@ -54,19 +33,16 @@ const SysAdminPanel = () => {
     return variants[role] || 'secondary'
   }
 
-  // Fetch all users when the component mounts
   useEffect(() => {
     fetchUsers()
   }, [])
 
-  // Fetch users from the protected endpoint
+  // Fetch all users including inactive ones
   const fetchUsers = async () => {
     setLoading(true)
     try {
       const response = await fetch('http://localhost:3000/users', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       })
 
       if (!response.ok) throw new Error('Error al obtener los usuarios')
@@ -80,55 +56,39 @@ const SysAdminPanel = () => {
     }
   }
 
-  // Opens the edit modal with the selected user's data
   const handleEditClick = (user) => {
     setEditingUser(user)
-    setFormData({
-      nombre: user.nombre,
-      email: user.email,
-      role: user.role
-    })
+    setFormData({ nombre: user.nombre, email: user.email, role: user.role })
     setShowEditModal(true)
   }
 
-  // Closes the edit modal and resets editing state
   const handleCloseEditModal = () => {
     setShowEditModal(false)
     setEditingUser(null)
   }
 
-  // Updates a single form field as the user types
   const handleFormChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  // Handles form submission for editing a user
   const handleEditSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
     setFeedback(null)
 
     try {
-      // We need to send a password too since the backend requires it for PUT
-      // We send the existing hashed password to avoid changing it
       const response = await fetch(`http://localhost:3000/users/${editingUser.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          nombre: formData.nombre,
-          email: formData.email,
-          role: formData.role
-        })
+        body: JSON.stringify(formData)
       })
 
       const data = await response.json()
-
       if (!response.ok) throw new Error(data.message)
 
-      // Update the user in local state without refetching
       setUsers(users.map((u) =>
         u.id === editingUser.id
           ? { ...u, nombre: formData.nombre, email: formData.email, role: formData.role }
@@ -137,7 +97,6 @@ const SysAdminPanel = () => {
 
       setFeedback({ type: 'success', message: 'Usuario actualizado correctamente' })
       handleCloseEditModal()
-
     } catch (err) {
       setFeedback({ type: 'danger', message: err.message })
     } finally {
@@ -145,19 +104,17 @@ const SysAdminPanel = () => {
     }
   }
 
-  // Opens the delete confirmation modal
   const handleDeleteClick = (user) => {
     setUserToDelete(user)
     setShowDeleteModal(true)
   }
 
-  // Closes the delete modal
   const handleCloseDeleteModal = () => {
     setShowDeleteModal(false)
     setUserToDelete(null)
   }
 
-  // Confirms and executes the deletion
+  // Soft delete handler
   const handleConfirmDelete = async () => {
     setSaving(true)
     setFeedback(null)
@@ -165,21 +122,19 @@ const SysAdminPanel = () => {
     try {
       const response = await fetch(`http://localhost:3000/users/${userToDelete.id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       })
 
       const data = await response.json()
-
       if (!response.ok) throw new Error(data.message)
 
-      // Remove the deleted user from local state
-      setUsers(users.filter((u) => u.id !== userToDelete.id))
+      // Mark user as inactive in local state instead of removing
+      setUsers(users.map((u) =>
+        u.id === userToDelete.id ? { ...u, activo: false } : u
+      ))
 
-      setFeedback({ type: 'success', message: `Usuario "${userToDelete.nombre}" eliminado correctamente` })
+      setFeedback({ type: 'success', message: 'Usuario desactivado correctamente' })
       handleCloseDeleteModal()
-
     } catch (err) {
       setFeedback({ type: 'danger', message: err.message })
     } finally {
@@ -187,7 +142,28 @@ const SysAdminPanel = () => {
     }
   }
 
-  // Show loading spinner while fetching users
+  // Restore handler
+  const handleRestore = async (user) => {
+    setFeedback(null)
+    try {
+      const response = await fetch(`http://localhost:3000/users/${user.id}/restore`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.message)
+
+      setUsers(users.map((u) =>
+        u.id === user.id ? { ...u, activo: true } : u
+      ))
+
+      setFeedback({ type: 'success', message: 'Usuario reactivado correctamente' })
+    } catch (err) {
+      setFeedback({ type: 'danger', message: err.message })
+    }
+  }
+
   if (loading) {
     return (
       <Container className="mt-5 text-center">
@@ -197,7 +173,6 @@ const SysAdminPanel = () => {
     )
   }
 
-  // Show error message if the fetch failed
   if (error) {
     return (
       <Container className="mt-4">
@@ -206,24 +181,33 @@ const SysAdminPanel = () => {
     )
   }
 
+  // Filter users based on showInactive toggle
+  const displayedUsers = showInactive
+    ? users
+    : users.filter((u) => u.activo)
+
   return (
     <Container className="mt-4">
       <h2 className="mb-4">
         <i className="bi bi-people-fill"></i> Administración de Usuarios
       </h2>
 
-      {/* Feedback message after actions */}
       {feedback && (
-        <Alert
-          variant={feedback.type}
-          dismissible
-          onClose={() => setFeedback(null)}
-        >
+        <Alert variant={feedback.type} dismissible onClose={() => setFeedback(null)}>
           {feedback.message}
         </Alert>
       )}
 
-      {/* Users table */}
+      {/* Toggle to show inactive users */}
+      <div className="mb-3">
+        <Form.Check
+          type="switch"
+          label="Mostrar usuarios inactivos"
+          checked={showInactive}
+          onChange={(e) => setShowInactive(e.target.checked)}
+        />
+      </div>
+
       <Table striped bordered hover responsive>
         <thead className="table-dark">
           <tr>
@@ -231,12 +215,13 @@ const SysAdminPanel = () => {
             <th>Nombre</th>
             <th>Email</th>
             <th>Rol</th>
+            <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
+          {displayedUsers.map((user) => (
+            <tr key={user.id} className={!user.activo ? 'table-secondary' : ''}>
               <td>{user.id}</td>
               <td>{user.nombre}</td>
               <td>{user.email}</td>
@@ -244,24 +229,38 @@ const SysAdminPanel = () => {
                 <Badge bg={getRoleVariant(user.role)}>{user.role}</Badge>
               </td>
               <td>
+                <Badge bg={user.activo ? 'success' : 'secondary'}>
+                  {user.activo ? 'Activo' : 'Inactivo'}
+                </Badge>
+              </td>
+              <td>
                 <div className="d-flex gap-2">
-                  {/* Edit button */}
-                  <Button
-                    variant="outline-dark"
-                    size="sm"
-                    onClick={() => handleEditClick(user)}
-                  >
-                    Editar
-                  </Button>
-
-                  {/* Delete button */}
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => handleDeleteClick(user)}
-                  >
-                    Eliminar
-                  </Button>
+                  {user.activo ? (
+                    <>
+                      <Button
+                        variant="outline-dark"
+                        size="sm"
+                        onClick={() => handleEditClick(user)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleDeleteClick(user)}
+                      >
+                        Desactivar
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="success"
+                      size="sm"
+                      onClick={() => handleRestore(user)}
+                    >
+                      Reactivar
+                    </Button>
+                  )}
                 </div>
               </td>
             </tr>
@@ -269,14 +268,13 @@ const SysAdminPanel = () => {
         </tbody>
       </Table>
 
-      {/* Edit user modal */}
+      {/* Edit modal */}
       <Modal show={showEditModal} onHide={handleCloseEditModal} centered>
         <Form onSubmit={handleEditSubmit}>
           <Modal.Header closeButton>
             <Modal.Title>Editar usuario</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-
             <Form.Group className="mb-3">
               <Form.Label>Nombre</Form.Label>
               <Form.Control
@@ -287,7 +285,6 @@ const SysAdminPanel = () => {
                 required
               />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
               <Form.Control
@@ -298,7 +295,6 @@ const SysAdminPanel = () => {
                 required
               />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>Rol</Form.Label>
               <Form.Select
@@ -312,7 +308,6 @@ const SysAdminPanel = () => {
                 ))}
               </Form.Select>
             </Form.Group>
-
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseEditModal}>
@@ -328,14 +323,14 @@ const SysAdminPanel = () => {
       {/* Delete confirmation modal */}
       <Modal show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Eliminar usuario</Modal.Title>
+          <Modal.Title>Desactivar usuario</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {userToDelete && (
             <p>
-              ¿Estás seguro de que querés eliminar al usuario{' '}
+              ¿Estás seguro de que querés desactivar al usuario{' '}
               <strong>{userToDelete.nombre}</strong>?
-              Esta acción no se puede deshacer.
+              El usuario no podrá iniciar sesión, pero sus datos se conservarán.
             </p>
           )}
         </Modal.Body>
@@ -344,7 +339,7 @@ const SysAdminPanel = () => {
             Cancelar
           </Button>
           <Button variant="danger" onClick={handleConfirmDelete} disabled={saving}>
-            {saving ? 'Eliminando...' : 'Eliminar'}
+            {saving ? 'Desactivando...' : 'Desactivar'}
           </Button>
         </Modal.Footer>
       </Modal>
