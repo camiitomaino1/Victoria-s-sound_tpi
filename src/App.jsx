@@ -8,6 +8,8 @@ import Register from "./components/Register";
 import Cart from "./components/Cart";
 import PrivateRoute from "./components/PrivateRoute";
 import OrderSummary from "./components/OrderSummary";
+import AdminRoute from "./components/AdminRoute";
+import AdminPanel from "./components/AdminPanel";
 
 const App = () => {
   return (
@@ -36,6 +38,14 @@ const App = () => {
             <PrivateRoute>
               <OrderSummary />
             </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminPanel />
+            </AdminRoute>
           }
         />
       </Routes>
