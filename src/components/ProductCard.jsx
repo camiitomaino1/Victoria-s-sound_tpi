@@ -1,43 +1,50 @@
 import { useContext } from 'react'
 import { Card, Badge, Button } from 'react-bootstrap'
+import { Link } from 'react-router-dom'
 import { CartContext } from '../context/CartContext'
 
 const ProductCard = ({ id, nombre, marca, categoria, precio, descripcion, imagen }) => {
 
-  // Connect to CartContext and get the addToCart function
   const { addToCart } = useContext(CartContext)
 
-  // Build the product object to pass to addToCart
   const product = { id, nombre, marca, categoria, precio, descripcion, imagen }
 
-  // Handler for the "Add to cart" button
   const handleAddToCart = () => {
-    addToCart(product)
+    addToCart(product, 1)
   }
 
   return (
     <Card className="h-100 shadow-sm">
 
-      {/* Product image with uniform height regardless of original resolution */}
-      <Card.Img
-        variant="top"
-        src={imagen}
-        alt={nombre}
-        style={{ height: '200px', objectFit: 'cover' }}
-      />
+      {/* Product image links to detail page */}
+      <Link to={`/products/${id}`}>
+        <Card.Img
+          variant="top"
+          src={imagen || 'https://placehold.co/400x200?text=Sin+imagen'}
+          alt={nombre}
+          style={{ height: '200px', objectFit: 'cover' }}
+        />
+      </Link>
 
       <Card.Body className="d-flex flex-column">
         <div className="d-flex justify-content-between align-items-start mb-2">
-          <Card.Title className="mb-0">{nombre}</Card.Title>
+
+          {/* Product name links to detail page */}
+          <Card.Title className="mb-0">
+            <Link
+              to={`/products/${id}`}
+              className="text-dark text-decoration-none"
+            >
+              {nombre}
+            </Link>
+          </Card.Title>
+
           <Badge bg="secondary" className="ms-2">{categoria}</Badge>
         </div>
 
-        {/* Brand name below the title */}
         <p className="text-muted small mb-2">{marca}</p>
 
-        <Card.Text className="flex-grow-1">
-          {descripcion}
-        </Card.Text>
+        <Card.Text className="flex-grow-1">{descripcion}</Card.Text>
 
         <div className="mt-3 d-flex justify-content-between align-items-center">
           <span className="fw-bold fs-5">${precio.toLocaleString()}</span>

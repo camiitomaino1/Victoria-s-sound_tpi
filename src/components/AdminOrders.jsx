@@ -1,11 +1,15 @@
 import { useState, useEffect, useContext } from 'react'
-import { Table, Form, Badge, Spinner, Alert, Row, Col } from 'react-bootstrap'
+import { Table, Form, Badge, Spinner, Alert, Row, Col, Button } from 'react-bootstrap'
+import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 
 const AdminOrders = () => {
 
   // Get the token to authenticate requests
   const { token } = useContext(AuthContext)
+
+  // Hook to navigate to order detail
+  const navigate = useNavigate()
 
   // State for the list of orders
   const [orders, setOrders] = useState([])
@@ -22,7 +26,7 @@ const AdminOrders = () => {
   // State for the selected status filter
   const [selectedStatus, setSelectedStatus] = useState('Todos')
 
-  // Stores which order id is currently being updated, to show a small spinner on that row
+  // Stores which order id is currently being updated
   const [updatingId, setUpdatingId] = useState(null)
 
   // Feedback message after a status update
@@ -88,7 +92,7 @@ const AdminOrders = () => {
         throw new Error(data.message)
       }
 
-      // Update the order in the local state instead of refetching everything
+      // Update the order in local state without refetching
       setOrders(orders.map((order) =>
         order.id === orderId ? { ...order, estado: newStatus } : order
       ))
@@ -102,7 +106,7 @@ const AdminOrders = () => {
     }
   }
 
-  // Apply both filters combined: search by id and status
+  // Apply both filters: search by id and filter by status
   const filteredOrders = orders.filter((order) => {
     const matchesSearch = order.id.toString().includes(search)
     const matchesStatus = selectedStatus === 'Todos' || order.estado === selectedStatus
@@ -120,7 +124,7 @@ const AdminOrders = () => {
     return variants[estado] || 'secondary'
   }
 
-  // Show loading spinner while fetching orders
+  // Show loading spinner while fetching
   if (loading) {
     return (
       <div className="text-center mt-4">
@@ -136,6 +140,7 @@ const AdminOrders = () => {
 
   return (
     <div>
+
       {/* Feedback message after status update */}
       {feedback && (
         <Alert variant={feedback.type} dismissible onClose={() => setFeedback(null)}>
@@ -177,7 +182,7 @@ const AdminOrders = () => {
               <th>Usuario</th>
               <th>Total</th>
               <th>Estado</th>
-              <th>Actualizar estado</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -190,7 +195,18 @@ const AdminOrders = () => {
                   <Badge bg={getStatusVariant(order.estado)}>{order.estado}</Badge>
                 </td>
                 <td>
-                  <div className="d-flex align-items-center gap-2">
+                  <div className="d-flex align-items-center gap-2 flex-wrap">
+
+                    {/* Navigate to order detail */}
+                    <Button
+                      variant="outline-secondary"
+                      size="sm"
+                      onClick={() => navigate(`/orders/${order.id}`)}
+                    >
+                      Ver detalle
+                    </Button>
+
+                    {/* Status selector */}
                     <Form.Select
                       size="sm"
                       value={order.estado}
@@ -202,9 +218,11 @@ const AdminOrders = () => {
                         <option key={status} value={status}>{status}</option>
                       ))}
                     </Form.Select>
+
                     {updatingId === order.id && (
                       <Spinner animation="border" size="sm" />
                     )}
+
                   </div>
                 </td>
               </tr>
@@ -212,6 +230,7 @@ const AdminOrders = () => {
           </tbody>
         </Table>
       )}
+
     </div>
   )
 }

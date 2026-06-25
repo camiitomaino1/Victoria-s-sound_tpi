@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from 'react'
 import { Container, Table, Badge, Alert, Spinner, Button } from 'react-bootstrap'
+import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 
 const OrdersHistory = () => {
@@ -7,10 +8,13 @@ const OrdersHistory = () => {
   // Get the token to authenticate requests
   const { token } = useContext(AuthContext)
 
+  // Hook to navigate to order detail
+  const navigate = useNavigate()
+
   // State for the list of orders
   const [orders, setOrders] = useState([])
 
-  // Loading state while fetching orders
+  // Loading state while fetching
   const [loading, setLoading] = useState(true)
 
   // Error state if the fetch fails
@@ -114,11 +118,11 @@ const OrdersHistory = () => {
                 <td>${order.total.toLocaleString()}</td>
                 <td>{formatDate(order.createdAt)}</td>
                 <td>
-                  {/* Detail button: prepared for future implementation */}
+                  {/* Navigate to order detail page */}
                   <Button
                     variant="outline-dark"
                     size="sm"
-                    disabled
+                    onClick={() => navigate(`/orders/${order.id}`)}
                   >
                     Ver detalle
                   </Button>
