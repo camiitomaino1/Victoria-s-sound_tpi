@@ -20,6 +20,7 @@ const App = () => {
   return (
     <BrowserRouter>
       <Navbar />
+      <main>
       <Routes>
 
         {/* Public routes */}
@@ -89,6 +90,7 @@ const App = () => {
         />
 
       </Routes>
+      </main>
       <Footer />
     </BrowserRouter>
   )

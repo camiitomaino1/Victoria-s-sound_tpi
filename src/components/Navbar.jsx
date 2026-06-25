@@ -30,17 +30,25 @@ const Navbar = () => {
   };
 
   return (
-    <BsNavbar bg="dark" variant="dark" expand="lg">
+    <BsNavbar
+      bg="dark"
+      variant="dark"
+      expand="lg"
+      fixed="top"
+    >
       <Container>
         <BsNavbar.Brand as={Link} to="/">
           🎸 Victoria's Sound
         </BsNavbar.Brand>
+
         <BsNavbar.Toggle aria-controls="main-nav" />
+
         <BsNavbar.Collapse id="main-nav">
           <Nav className="ms-auto align-items-center">
             <Nav.Link as={Link} to="/">
               Inicio
             </Nav.Link>
+
             <Nav.Link as={Link} to="/products">
               Productos
             </Nav.Link>
@@ -55,35 +63,34 @@ const Navbar = () => {
               )}
             </Nav.Link>
 
-            {/* Admin panel link, only visible for admin and sysadmin */}
-            {user && (user.role === "admin" || user.role === "sysadmin") && (
-              <Nav.Link as={Link} to="/admin">
-                <i className="bi bi-gear-fill"></i> Panel Admin
-              </Nav.Link>
-            )}
+            {/* Admin panel link */}
+            {user &&
+              (user.role === "admin" || user.role === "sysadmin") && (
+                <Nav.Link as={Link} to="/admin">
+                  <i className="bi bi-gear-fill"></i> Panel Admin
+                </Nav.Link>
+              )}
 
-            {/* Users management link, only visible for sysadmin */}
+            {/* Sysadmin users panel */}
             {user && user.role === "sysadmin" && (
               <Nav.Link as={Link} to="/admin/users">
                 <i className="bi bi-people-fill"></i> Usuarios
               </Nav.Link>
             )}
 
-            {/* Show user dropdown if logged in, otherwise show login and register */}
+            {/* User menu */}
             {user ? (
               <NavDropdown
                 title={<span>👤 {user.nombre}</span>}
                 id="user-dropdown"
                 align="end"
               >
-                {/* Order history link inside dropdown */}
                 <NavDropdown.Item as={Link} to="/mis-pedidos">
                   Mis pedidos
                 </NavDropdown.Item>
 
                 <NavDropdown.Divider />
 
-                {/* Logout option */}
                 <NavDropdown.Item onClick={handleLogout}>
                   Cerrar sesión
                 </NavDropdown.Item>
@@ -93,6 +100,7 @@ const Navbar = () => {
                 <Nav.Link as={Link} to="/login">
                   Iniciar sesión
                 </Nav.Link>
+
                 <Nav.Link as={Link} to="/register">
                   Registrarse
                 </Nav.Link>
