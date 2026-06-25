@@ -5,37 +5,36 @@ import { CartContext } from '../context/CartContext'
 
 const ProductDetail = () => {
 
-  // Get the product id from the URL
   const { id } = useParams()
   const navigate = useNavigate()
-
-  // Get addToCart from CartContext
   const { addToCart } = useContext(CartContext)
 
-  // State for the product data
   const [product, setProduct] = useState(null)
-
-  // Loading state while fetching
   const [loading, setLoading] = useState(true)
-
-  // Error state if the fetch fails
   const [error, setError] = useState(null)
-
-  // State for the selected quantity
   const [quantity, setQuantity] = useState(1)
-
-  // Success message after adding to cart
   const [addedMessage, setAddedMessage] = useState(false)
 
-  // Fetch the product when the component mounts
+  // Returns Bootstrap color class based on stock level
+  const getStockVariant = (stock) => {
+    if (stock === 0) return 'danger'
+    if (stock <= 10) return 'warning'
+    return 'success'
+  }
+
+  // Returns stock label text
+  const getStockLabel = (stock) => {
+    if (stock === 0) return 'Sin stock'
+    if (stock <= 10) return `Stock bajo: ${stock} disponibles`
+    return `Stock disponible: ${stock}`
+  }
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const response = await fetch(`http://localhost:3000/products/${id}`)
 
-        if (!response.ok) {
-          throw new Error('Producto no encontrado')
-        }
+        if (!response.ok) throw new Error('Producto no encontrado')
 
         const data = await response.json()
         setProduct(data)
@@ -49,26 +48,22 @@ const ProductDetail = () => {
     fetchProduct()
   }, [id])
 
-  // Increase quantity by 1
+  // Increase quantity, cannot exceed available stock
   const handleIncrease = () => {
-    setQuantity((prev) => prev + 1)
+    setQuantity((prev) => (prev < product.stock ? prev + 1 : prev))
   }
 
-  // Decrease quantity by 1, minimum is 1
+  // Decrease quantity, minimum is 1
   const handleDecrease = () => {
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1))
   }
 
-  // Add the product to the cart with the selected quantity
   const handleAddToCart = () => {
     addToCart(product, quantity)
     setAddedMessage(true)
-
-    // Hide the success message after 2 seconds
     setTimeout(() => setAddedMessage(false), 2000)
   }
 
-  // Show loading spinner while fetching
   if (loading) {
     return (
       <Container className="mt-5 text-center">
@@ -78,7 +73,6 @@ const ProductDetail = () => {
     )
   }
 
-  // Show error message if the fetch failed
   if (error) {
     return (
       <Container className="mt-4">
@@ -93,7 +87,6 @@ const ProductDetail = () => {
   return (
     <Container className="mt-4">
 
-      {/* Success message after adding to cart */}
       {addedMessage && (
         <Alert variant="success">
           ¡Producto agregado al carrito correctamente!
@@ -135,34 +128,50 @@ const ProductDetail = () => {
 
           <p className="text-muted mb-3">{product.descripcion}</p>
 
-          <h3 className="mb-4">${product.precio.toLocaleString()}</h3>
+          <h3 className="mb-3">${product.precio.toLocaleString()}</h3>
 
-          {/* Quantity selector */}
-          <div className="d-flex align-items-center gap-3 mb-4">
-            <span className="fw-bold">Cantidad:</span>
-            <div className="d-flex align-items-center gap-2">
-              <Button
-                variant="outline-dark"
-                size="sm"
-                onClick={handleDecrease}
-              >
-                −
-              </Button>
-              <span className="fs-5 px-2">{quantity}</span>
-              <Button
-                variant="outline-dark"
-                size="sm"
-                onClick={handleIncrease}
-              >
-                +
-              </Button>
+          {/* Stock indicator with color coding */}
+          <p className={`fw-bold text-${getStockVariant(product.stock)} mb-4`}>
+            {getStockLabel(product.stock)}
+          </p>
+
+          {/* Quantity selector: hidden if no stock */}
+          {product.stock > 0 && (
+            <div className="d-flex align-items-center gap-3 mb-4">
+              <span className="fw-bold">Cantidad:</span>
+              <div className="d-flex align-items-center gap-2">
+                <Button
+                  variant="outline-dark"
+                  size="sm"
+                  onClick={handleDecrease}
+                >
+                  −
+                </Button>
+                <span className="fs-5 px-2">{quantity}</span>
+                <Button
+                  variant="outline-dark"
+                  size="sm"
+                  onClick={handleIncrease}
+                  // Disable if quantity already reaches max stock
+                  disabled={quantity >= product.stock}
+                >
+                  +
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Action buttons */}
           <div className="d-flex gap-3">
-            <Button variant="dark" onClick={handleAddToCart}>
-              <i className="bi bi-cart-plus"></i> Agregar al carrito
+            <Button
+              variant="dark"
+              onClick={handleAddToCart}
+              // Disable if no stock available
+              disabled={product.stock === 0}
+            >
+              {product.stock === 0 ? 'Sin stock' : (
+                <><i className="bi bi-cart-plus"></i> Agregar al carrito</>
+              )}
             </Button>
             <Button variant="outline-secondary" onClick={() => navigate('/products')}>
               Volver a productos

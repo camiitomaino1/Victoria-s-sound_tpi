@@ -3,14 +3,21 @@ import { Card, Badge, Button } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { CartContext } from '../context/CartContext'
 
-const ProductCard = ({ id, nombre, marca, categoria, precio, descripcion, imagen }) => {
+const ProductCard = ({ id, nombre, marca, categoria, precio, descripcion, imagen, stock }) => {
 
   const { addToCart } = useContext(CartContext)
 
-  const product = { id, nombre, marca, categoria, precio, descripcion, imagen }
+  const product = { id, nombre, marca, categoria, precio, descripcion, imagen, stock }
 
   const handleAddToCart = () => {
     addToCart(product, 1)
+  }
+
+  // Returns Bootstrap badge color based on stock level
+  const getStockVariant = (stock) => {
+    if (stock === 0) return 'danger'
+    if (stock <= 10) return 'warning'
+    return 'success'
   }
 
   return (
@@ -28,17 +35,11 @@ const ProductCard = ({ id, nombre, marca, categoria, precio, descripcion, imagen
 
       <Card.Body className="d-flex flex-column">
         <div className="d-flex justify-content-between align-items-start mb-2">
-
-          {/* Product name links to detail page */}
           <Card.Title className="mb-0">
-            <Link
-              to={`/products/${id}`}
-              className="text-dark text-decoration-none"
-            >
+            <Link to={`/products/${id}`} className="text-dark text-decoration-none">
               {nombre}
             </Link>
           </Card.Title>
-
           <Badge bg="secondary" className="ms-2">{categoria}</Badge>
         </div>
 
@@ -46,10 +47,22 @@ const ProductCard = ({ id, nombre, marca, categoria, precio, descripcion, imagen
 
         <Card.Text className="flex-grow-1">{descripcion}</Card.Text>
 
-        <div className="mt-3 d-flex justify-content-between align-items-center">
+        {/* Stock badge */}
+        <div className="mb-2">
+          <Badge bg={getStockVariant(stock)}>
+            {stock === 0 ? 'Sin stock' : `Stock: ${stock}`}
+          </Badge>
+        </div>
+
+        <div className="mt-2 d-flex justify-content-between align-items-center">
           <span className="fw-bold fs-5">${precio.toLocaleString()}</span>
-          <Button variant="dark" size="sm" onClick={handleAddToCart}>
-            Agregar al carrito
+          <Button
+            variant="dark"
+            size="sm"
+            onClick={handleAddToCart}
+            disabled={stock === 0}
+          >
+            {stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
           </Button>
         </div>
       </Card.Body>

@@ -1,75 +1,82 @@
-import { useState, useEffect } from 'react'
-import { Container, Row, Col, Form, ButtonGroup, Button, Spinner, Alert } from 'react-bootstrap'
-import ProductCard from './ProductCard'
+import { useState, useEffect } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  ButtonGroup,
+  Button,
+  Spinner,
+  Alert,
+} from "react-bootstrap";
+import ProductCard from "./ProductCard";
 
 const Products = () => {
-
   // State for products fetched from the API
-  const [products, setProducts] = useState([])
+  const [products, setProducts] = useState([]);
 
   // State for loading indicator
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
 
   // State for error handling
-  const [error, setError] = useState(null)
+  const [error, setError] = useState(null);
 
   // State for the search input
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState("");
 
   // State for the selected category filter
-  const [selectedCategory, setSelectedCategory] = useState('Todas')
+  const [selectedCategory, setSelectedCategory] = useState("Todas");
 
   // Fetch products from the API when the component mounts
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://localhost:3000/products')
+        const response = await fetch("http://localhost:3000/products");
 
         if (!response.ok) {
-          throw new Error('Error al obtener los productos')
+          throw new Error("Error al obtener los productos");
         }
 
-        const data = await response.json()
-        setProducts(data)
+        const data = await response.json();
+        setProducts(data);
       } catch (error) {
-        setError(error.message)
+        setError(error.message);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchProducts()
-  }, [])
+    fetchProducts();
+  }, []);
 
   // Extract unique categories from the fetched products and add "Todas"
-  const categories = ['Todas', ...new Set(products.map((p) => p.categoria))]
+  const categories = ["Todas", ...new Set(products.map((p) => p.categoria))];
 
   // Handler for search input changes
   const handleSearchChange = (e) => {
-    setSearch(e.target.value)
-  }
+    setSearch(e.target.value);
+  };
 
   // Handler for category button clicks
   const handleCategoryChange = (category) => {
-    setSelectedCategory(category)
-  }
+    setSelectedCategory(category);
+  };
 
   // Apply both filters combined: search and category
   const filteredProducts = products.filter((product) => {
-    const term = search.toLowerCase()
-  
+    const term = search.toLowerCase();
+
     const matchesSearch =
       product.nombre.toLowerCase().includes(term) ||
       product.categoria.toLowerCase().includes(term) ||
       product.marca.toLowerCase().includes(term) ||
-      product.descripcion.toLowerCase().includes(term)
-  
+      product.descripcion.toLowerCase().includes(term);
+
     const matchesCategory =
-      selectedCategory === 'Todas' ||
-      product.categoria === selectedCategory
-  
-    return matchesSearch && matchesCategory
-  })
+      selectedCategory === "Todas" || product.categoria === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  });
 
   // Show loading spinner while fetching
   if (loading) {
@@ -78,7 +85,7 @@ const Products = () => {
         <Spinner animation="border" variant="dark" />
         <p className="mt-3 text-muted">Cargando productos...</p>
       </Container>
-    )
+    );
   }
 
   // Show error message if the fetch failed
@@ -86,10 +93,11 @@ const Products = () => {
     return (
       <Container className="mt-4">
         <Alert variant="danger">
-          No se pudieron cargar los productos. Verificá que el servidor esté funcionando.
+          No se pudieron cargar los productos. Verificá que el servidor esté
+          funcionando.
         </Alert>
       </Container>
-    )
+    );
   }
 
   return (
@@ -110,7 +118,7 @@ const Products = () => {
         {categories.map((category) => (
           <Button
             key={category}
-            variant={selectedCategory === category ? 'dark' : 'outline-dark'}
+            variant={selectedCategory === category ? "dark" : "outline-dark"}
             onClick={() => handleCategoryChange(category)}
           >
             {category}
@@ -120,7 +128,9 @@ const Products = () => {
 
       {/* No results message */}
       {filteredProducts.length === 0 && (
-        <p className="text-muted">No se encontraron instrumentos con ese criterio.</p>
+        <p className="text-muted">
+          No se encontraron instrumentos con ese criterio.
+        </p>
       )}
 
       {/* Products grid */}
@@ -135,12 +145,13 @@ const Products = () => {
               precio={product.precio}
               descripcion={product.descripcion}
               imagen={product.imagen}
+              stock={product.stock}
             />
           </Col>
         ))}
       </Row>
     </Container>
-  )
-}
+  );
+};
 
-export default Products
+export default Products;

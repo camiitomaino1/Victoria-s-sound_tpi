@@ -6,7 +6,6 @@ const AdminProducts = () => {
 
   const { token } = useContext(AuthContext)
 
-  // State for all products including inactive ones
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -17,39 +16,51 @@ const AdminProducts = () => {
     marca: '',
     categoria: '',
     precio: '',
-    descripcion: ''
+    descripcion: '',
+    stock: 0
   })
   const [saving, setSaving] = useState(false)
   const [feedback, setFeedback] = useState(null)
-
-  // Controls whether to show inactive products
   const [showInactive, setShowInactive] = useState(false)
+
+  // Returns Bootstrap badge color based on stock level
+  const getStockVariant = (stock) => {
+    if (stock === 0) return 'danger'
+    if (stock <= 10) return 'warning'
+    return 'success'
+  }
 
   useEffect(() => {
     fetchProducts()
   }, [])
 
-  // Fetch all products including inactive ones for admin view
   const fetchProducts = async () => {
     setLoading(true)
     try {
-      // Admin fetches from a different endpoint that includes inactive products
       const response = await fetch('http://localhost:3000/products/all', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
-
-      // Fallback to public endpoint if /all doesn't exist yet
-      if (!response.ok) {
-        const fallback = await fetch('http://localhost:3000/products')
-        const data = await fallback.json()
-        setProducts(data)
+  
+      if (response.ok) {
+        const data = await response.json()
+        // Make sure data is an array before setting state
+        setProducts(Array.isArray(data) ? data : [])
         return
       }
-
-      const data = await response.json()
-      setProducts(data)
+  
+      // Fallback to public endpoint
+      const fallback = await fetch('http://localhost:3000/products')
+      if (fallback.ok) {
+        const data = await fallback.json()
+        setProducts(Array.isArray(data) ? data : [])
+      } else {
+        setError('Error al obtener los productos')
+        setProducts([])
+      }
+  
     } catch (err) {
       setError(err.message)
+      setProducts([])
     } finally {
       setLoading(false)
     }
@@ -57,7 +68,7 @@ const AdminProducts = () => {
 
   const handleNewProduct = () => {
     setEditingProduct(null)
-    setFormData({ nombre: '', marca: '', categoria: '', precio: '', descripcion: '' })
+    setFormData({ nombre: '', marca: '', categoria: '', precio: '', descripcion: '', stock: 0 })
     setShowModal(true)
   }
 
@@ -68,7 +79,8 @@ const AdminProducts = () => {
       marca: product.marca,
       categoria: product.categoria,
       precio: product.precio,
-      descripcion: product.descripcion
+      descripcion: product.descripcion,
+      stock: product.stock
     })
     setShowModal(true)
   }
@@ -119,7 +131,6 @@ const AdminProducts = () => {
     }
   }
 
-  // Handler for soft delete
   const handleDelete = async (product) => {
     setFeedback(null)
     try {
@@ -131,7 +142,6 @@ const AdminProducts = () => {
       const data = await response.json()
       if (!response.ok) throw new Error(data.message)
 
-      // Mark the product as inactive in local state
       setProducts(products.map((p) =>
         p.id === product.id ? { ...p, activo: false } : p
       ))
@@ -142,7 +152,6 @@ const AdminProducts = () => {
     }
   }
 
-  // Handler for restore
   const handleRestore = async (product) => {
     setFeedback(null)
     try {
@@ -154,7 +163,6 @@ const AdminProducts = () => {
       const data = await response.json()
       if (!response.ok) throw new Error(data.message)
 
-      // Mark the product as active in local state
       setProducts(products.map((p) =>
         p.id === product.id ? { ...p, activo: true } : p
       ))
@@ -177,7 +185,6 @@ const AdminProducts = () => {
     return <Alert variant="danger">{error}</Alert>
   }
 
-  // Filter products based on showInactive toggle
   const displayedProducts = showInactive
     ? products
     : products.filter((p) => p.activo)
@@ -210,6 +217,7 @@ const AdminProducts = () => {
             <th>Marca</th>
             <th>Categoría</th>
             <th>Precio</th>
+            <th>Stock</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -222,6 +230,11 @@ const AdminProducts = () => {
               <td>{product.marca}</td>
               <td>{product.categoria}</td>
               <td>${product.precio.toLocaleString()}</td>
+              <td>
+                <Badge bg={getStockVariant(product.stock)}>
+                  {product.stock === 0 ? 'Sin stock' : product.stock}
+                </Badge>
+              </td>
               <td>
                 <Badge bg={product.activo ? 'success' : 'secondary'}>
                   {product.activo ? 'Activo' : 'Inactivo'}
@@ -262,6 +275,7 @@ const AdminProducts = () => {
         </tbody>
       </Table>
 
+      {/* Create / Edit modal */}
       <Modal show={showModal} onHide={handleCloseModal} centered>
         <Form onSubmit={handleSubmit}>
           <Modal.Header closeButton>
@@ -270,6 +284,7 @@ const AdminProducts = () => {
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
+
             <Form.Group className="mb-3">
               <Form.Label>Nombre</Form.Label>
               <Form.Control
@@ -280,6 +295,7 @@ const AdminProducts = () => {
                 required
               />
             </Form.Group>
+
             <Form.Group className="mb-3">
               <Form.Label>Marca</Form.Label>
               <Form.Control
@@ -290,6 +306,7 @@ const AdminProducts = () => {
                 required
               />
             </Form.Group>
+
             <Form.Group className="mb-3">
               <Form.Label>Categoría</Form.Label>
               <Form.Select
@@ -307,6 +324,7 @@ const AdminProducts = () => {
                 <option value="Accesorios">Accesorios</option>
               </Form.Select>
             </Form.Group>
+
             <Form.Group className="mb-3">
               <Form.Label>Precio</Form.Label>
               <Form.Control
@@ -317,6 +335,19 @@ const AdminProducts = () => {
                 required
               />
             </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Stock</Form.Label>
+              <Form.Control
+                type="number"
+                name="stock"
+                value={formData.stock}
+                onChange={handleFormChange}
+                min="0"
+                required
+              />
+            </Form.Group>
+
             <Form.Group className="mb-3">
               <Form.Label>Descripción</Form.Label>
               <Form.Control
@@ -328,6 +359,7 @@ const AdminProducts = () => {
                 required
               />
             </Form.Group>
+
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>
@@ -339,6 +371,7 @@ const AdminProducts = () => {
           </Modal.Footer>
         </Form>
       </Modal>
+
     </div>
   )
 }
