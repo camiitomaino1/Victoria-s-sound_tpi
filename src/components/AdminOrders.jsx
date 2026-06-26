@@ -1,57 +1,36 @@
 import { useState, useEffect, useContext } from 'react'
-import { Table, Form, Badge, Spinner, Alert, Row, Col, Button } from 'react-bootstrap'
+import { Table, Form, Badge, Spinner, Alert, Row, Col, Button, Modal } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 
 const AdminOrders = () => {
 
-  // Get the token to authenticate requests
-  const { token } = useContext(AuthContext)
-
-  // Hook to navigate to order detail
+  const { fetchWithAuth } = useContext(AuthContext)
   const navigate = useNavigate()
 
-  // State for the list of orders
   const [orders, setOrders] = useState([])
-
-  // Loading state for the initial fetch
   const [loading, setLoading] = useState(true)
-
-  // Error state for the initial fetch
   const [error, setError] = useState(null)
-
-  // State for the search input (search by order id)
   const [search, setSearch] = useState('')
-
-  // State for the selected status filter
   const [selectedStatus, setSelectedStatus] = useState('Todos')
-
-  // Stores which order id is currently being updated
+  const [dateOrder, setDateOrder] = useState('newest')
   const [updatingId, setUpdatingId] = useState(null)
-
-  // Feedback message after a status update
   const [feedback, setFeedback] = useState(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [orderToDelete, setOrderToDelete] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
-  // List of possible order statuses
   const statusOptions = ['pendiente', 'confirmado', 'enviado', 'entregado']
 
-  // Fetch all orders when the component mounts
   useEffect(() => {
     fetchOrders()
   }, [])
 
-  // Fetch orders from the protected endpoint
   const fetchOrders = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/orders', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-
+      const response = await fetchWithAuth('http://localhost:3000/orders')
       if (!response.ok) throw new Error('Error al obtener los pedidos')
-
       const data = await response.json()
       setOrders(data)
     } catch (err) {
@@ -61,59 +40,6 @@ const AdminOrders = () => {
     }
   }
 
-  // Handler for search input changes
-  const handleSearchChange = (e) => {
-    setSearch(e.target.value)
-  }
-
-  // Handler for status filter changes
-  const handleStatusFilterChange = (e) => {
-    setSelectedStatus(e.target.value)
-  }
-
-  // Handler for changing an order's status from the table
-  const handleStatusChange = async (orderId, newStatus) => {
-    setUpdatingId(orderId)
-    setFeedback(null)
-
-    try {
-      const response = await fetch(`http://localhost:3000/orders/${orderId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ estado: newStatus })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message)
-      }
-
-      // Update the order in local state without refetching
-      setOrders(orders.map((order) =>
-        order.id === orderId ? { ...order, estado: newStatus } : order
-      ))
-
-      setFeedback({ type: 'success', message: `Pedido #${orderId} actualizado a "${newStatus}"` })
-
-    } catch (err) {
-      setFeedback({ type: 'danger', message: err.message })
-    } finally {
-      setUpdatingId(null)
-    }
-  }
-
-  // Apply both filters: search by id and filter by status
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch = order.id.toString().includes(search)
-    const matchesStatus = selectedStatus === 'Todos' || order.estado === selectedStatus
-    return matchesSearch && matchesStatus
-  })
-
-  // Returns a Bootstrap badge color depending on the order status
   const getStatusVariant = (estado) => {
     const variants = {
       pendiente: 'warning',
@@ -124,7 +50,76 @@ const AdminOrders = () => {
     return variants[estado] || 'secondary'
   }
 
-  // Show loading spinner while fetching
+  const handleStatusChange = async (orderId, newStatus) => {
+    setUpdatingId(orderId)
+    setFeedback(null)
+
+    try {
+      const response = await fetchWithAuth(`http://localhost:3000/orders/${orderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: newStatus })
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.message)
+
+      setOrders(orders.map((order) =>
+        order.id === orderId ? { ...order, estado: newStatus } : order
+      ))
+
+      setFeedback({ type: 'success', message: `Pedido #${orderId} actualizado a "${newStatus}"` })
+    } catch (err) {
+      setFeedback({ type: 'danger', message: err.message })
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  const handleDeleteClick = (order) => {
+    setOrderToDelete(order)
+    setShowDeleteModal(true)
+  }
+
+  const handleCloseDeleteModal = () => {
+    setOrderToDelete(null)
+    setShowDeleteModal(false)
+  }
+
+  const handleConfirmDelete = async () => {
+    setDeleting(true)
+    setFeedback(null)
+
+    try {
+      const response = await fetchWithAuth(`http://localhost:3000/orders/${orderToDelete.id}`, {
+        method: 'DELETE'
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.message)
+
+      setOrders(orders.filter((o) => o.id !== orderToDelete.id))
+      setFeedback({ type: 'success', message: `Pedido #${orderToDelete.id} eliminado correctamente` })
+      handleCloseDeleteModal()
+    } catch (err) {
+      setFeedback({ type: 'danger', message: 'No fue posible eliminar el pedido. Intentá de nuevo.' })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const filteredAndSortedOrders = orders
+    .filter((order) => {
+      const matchesSearch = order.id.toString().includes(search.trim())
+      const matchesStatus = selectedStatus === 'Todos' || order.estado === selectedStatus
+      return matchesSearch && matchesStatus
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt)
+      const dateB = new Date(b.createdAt)
+      return dateOrder === 'newest' ? dateB - dateA : dateA - dateB
+    })
+
   if (loading) {
     return (
       <div className="text-center mt-4">
@@ -133,7 +128,6 @@ const AdminOrders = () => {
     )
   }
 
-  // Show error message if the fetch failed
   if (error) {
     return <Alert variant="danger">{error}</Alert>
   }
@@ -141,40 +135,42 @@ const AdminOrders = () => {
   return (
     <div>
 
-      {/* Feedback message after status update */}
       {feedback && (
         <Alert variant={feedback.type} dismissible onClose={() => setFeedback(null)}>
           {feedback.message}
         </Alert>
       )}
 
-      {/* Search and filter controls */}
       <Row className="mb-3 g-2">
-        <Col md={6}>
+        <Col md={4}>
           <Form.Control
             type="text"
             placeholder="Buscar por número de pedido..."
             value={search}
-            onChange={handleSearchChange}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </Col>
-        <Col md={6}>
-          <Form.Select value={selectedStatus} onChange={handleStatusFilterChange}>
+        <Col md={4}>
+          <Form.Select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
             <option value="Todos">Todos los estados</option>
             {statusOptions.map((status) => (
               <option key={status} value={status}>{status}</option>
             ))}
           </Form.Select>
         </Col>
+        <Col md={4}>
+          <Form.Select value={dateOrder} onChange={(e) => setDateOrder(e.target.value)}>
+            <option value="newest">Más recientes primero</option>
+            <option value="oldest">Más antiguos primero</option>
+          </Form.Select>
+        </Col>
       </Row>
 
-      {/* No results message */}
-      {filteredOrders.length === 0 && (
+      {filteredAndSortedOrders.length === 0 && (
         <Alert variant="info">No se encontraron pedidos con ese criterio.</Alert>
       )}
 
-      {/* Orders table */}
-      {filteredOrders.length > 0 && (
+      {filteredAndSortedOrders.length > 0 && (
         <Table striped bordered hover responsive>
           <thead className="table-dark">
             <tr>
@@ -182,11 +178,12 @@ const AdminOrders = () => {
               <th>Usuario</th>
               <th>Total</th>
               <th>Estado</th>
+              <th>Fecha</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {filteredOrders.map((order) => (
+            {filteredAndSortedOrders.map((order) => (
               <tr key={order.id}>
                 <td>#{order.id}</td>
                 <td>{order.User ? order.User.nombre : 'Usuario eliminado'}</td>
@@ -195,9 +192,14 @@ const AdminOrders = () => {
                   <Badge bg={getStatusVariant(order.estado)}>{order.estado}</Badge>
                 </td>
                 <td>
+                  {new Date(order.createdAt).toLocaleDateString('es-AR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                  })}
+                </td>
+                <td>
                   <div className="d-flex align-items-center gap-2 flex-wrap">
-
-                    {/* Navigate to order detail */}
                     <Button
                       variant="outline-secondary"
                       size="sm"
@@ -205,8 +207,6 @@ const AdminOrders = () => {
                     >
                       Ver detalle
                     </Button>
-
-                    {/* Status selector */}
                     <Form.Select
                       size="sm"
                       value={order.estado}
@@ -218,11 +218,16 @@ const AdminOrders = () => {
                         <option key={status} value={status}>{status}</option>
                       ))}
                     </Form.Select>
-
                     {updatingId === order.id && (
                       <Spinner animation="border" size="sm" />
                     )}
-
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleDeleteClick(order)}
+                    >
+                      Eliminar
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -230,6 +235,27 @@ const AdminOrders = () => {
           </tbody>
         </Table>
       )}
+
+      <Modal show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Eliminar pedido</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {orderToDelete && (
+            <p>
+              ¿Estás seguro de que querés eliminar el pedido{' '}
+              <strong>#{orderToDelete.id}</strong>?{' '}
+              Esta acción no se puede deshacer.
+            </p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseDeleteModal}>Cancelar</Button>
+          <Button variant="danger" onClick={handleConfirmDelete} disabled={deleting}>
+            {deleting ? 'Eliminando...' : 'Eliminar'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
     </div>
   )

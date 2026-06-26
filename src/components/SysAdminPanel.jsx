@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext'
 
 const SysAdminPanel = () => {
 
-  const { token } = useContext(AuthContext)
+  const { fetchWithAuth } = useContext(AuthContext)
 
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -16,20 +16,12 @@ const SysAdminPanel = () => {
   const [userToDelete, setUserToDelete] = useState(null)
   const [saving, setSaving] = useState(false)
   const [showInactive, setShowInactive] = useState(false)
-  const [formData, setFormData] = useState({
-    nombre: '',
-    email: '',
-    role: 'user'
-  })
+  const [formData, setFormData] = useState({ nombre: '', email: '', role: 'user' })
 
   const roleOptions = ['user', 'admin', 'sysadmin']
 
   const getRoleVariant = (role) => {
-    const variants = {
-      user: 'secondary',
-      admin: 'primary',
-      sysadmin: 'danger'
-    }
+    const variants = { user: 'secondary', admin: 'primary', sysadmin: 'danger' }
     return variants[role] || 'secondary'
   }
 
@@ -37,16 +29,11 @@ const SysAdminPanel = () => {
     fetchUsers()
   }, [])
 
-  // Fetch all users including inactive ones
   const fetchUsers = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/users', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-
+      const response = await fetchWithAuth('http://localhost:3000/users')
       if (!response.ok) throw new Error('Error al obtener los usuarios')
-
       const data = await response.json()
       setUsers(data)
     } catch (err) {
@@ -77,12 +64,9 @@ const SysAdminPanel = () => {
     setFeedback(null)
 
     try {
-      const response = await fetch(`http://localhost:3000/users/${editingUser.id}`, {
+      const response = await fetchWithAuth(`http://localhost:3000/users/${editingUser.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
 
@@ -114,21 +98,18 @@ const SysAdminPanel = () => {
     setUserToDelete(null)
   }
 
-  // Soft delete handler
   const handleConfirmDelete = async () => {
     setSaving(true)
     setFeedback(null)
 
     try {
-      const response = await fetch(`http://localhost:3000/users/${userToDelete.id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetchWithAuth(`http://localhost:3000/users/${userToDelete.id}`, {
+        method: 'DELETE'
       })
 
       const data = await response.json()
       if (!response.ok) throw new Error(data.message)
 
-      // Mark user as inactive in local state instead of removing
       setUsers(users.map((u) =>
         u.id === userToDelete.id ? { ...u, activo: false } : u
       ))
@@ -142,13 +123,11 @@ const SysAdminPanel = () => {
     }
   }
 
-  // Restore handler
   const handleRestore = async (user) => {
     setFeedback(null)
     try {
-      const response = await fetch(`http://localhost:3000/users/${user.id}/restore`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetchWithAuth(`http://localhost:3000/users/${user.id}/restore`, {
+        method: 'PATCH'
       })
 
       const data = await response.json()
@@ -181,10 +160,7 @@ const SysAdminPanel = () => {
     )
   }
 
-  // Filter users based on showInactive toggle
-  const displayedUsers = showInactive
-    ? users
-    : users.filter((u) => u.activo)
+  const displayedUsers = showInactive ? users : users.filter((u) => u.activo)
 
   return (
     <Container className="mt-4">
@@ -198,7 +174,6 @@ const SysAdminPanel = () => {
         </Alert>
       )}
 
-      {/* Toggle to show inactive users */}
       <div className="mb-3">
         <Form.Check
           type="switch"
@@ -237,27 +212,15 @@ const SysAdminPanel = () => {
                 <div className="d-flex gap-2">
                   {user.activo ? (
                     <>
-                      <Button
-                        variant="outline-dark"
-                        size="sm"
-                        onClick={() => handleEditClick(user)}
-                      >
+                      <Button variant="outline-dark" size="sm" onClick={() => handleEditClick(user)}>
                         Editar
                       </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDeleteClick(user)}
-                      >
+                      <Button variant="danger" size="sm" onClick={() => handleDeleteClick(user)}>
                         Desactivar
                       </Button>
                     </>
                   ) : (
-                    <Button
-                      variant="success"
-                      size="sm"
-                      onClick={() => handleRestore(user)}
-                    >
+                    <Button variant="success" size="sm" onClick={() => handleRestore(user)}>
                       Reactivar
                     </Button>
                   )}
@@ -268,7 +231,6 @@ const SysAdminPanel = () => {
         </tbody>
       </Table>
 
-      {/* Edit modal */}
       <Modal show={showEditModal} onHide={handleCloseEditModal} centered>
         <Form onSubmit={handleEditSubmit}>
           <Modal.Header closeButton>
@@ -277,32 +239,15 @@ const SysAdminPanel = () => {
           <Modal.Body>
             <Form.Group className="mb-3">
               <Form.Label>Nombre</Form.Label>
-              <Form.Control
-                type="text"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleFormChange}
-                required
-              />
+              <Form.Control type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} required />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleFormChange}
-                required
-              />
+              <Form.Control type="email" name="email" value={formData.email} onChange={handleFormChange} required />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Rol</Form.Label>
-              <Form.Select
-                name="role"
-                value={formData.role}
-                onChange={handleFormChange}
-                required
-              >
+              <Form.Select name="role" value={formData.role} onChange={handleFormChange} required>
                 {roleOptions.map((role) => (
                   <option key={role} value={role}>{role}</option>
                 ))}
@@ -310,9 +255,7 @@ const SysAdminPanel = () => {
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseEditModal}>
-              Cancelar
-            </Button>
+            <Button variant="secondary" onClick={handleCloseEditModal}>Cancelar</Button>
             <Button variant="dark" type="submit" disabled={saving}>
               {saving ? 'Guardando...' : 'Guardar'}
             </Button>
@@ -320,7 +263,6 @@ const SysAdminPanel = () => {
         </Form>
       </Modal>
 
-      {/* Delete confirmation modal */}
       <Modal show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
         <Modal.Header closeButton>
           <Modal.Title>Desactivar usuario</Modal.Title>
@@ -335,9 +277,7 @@ const SysAdminPanel = () => {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseDeleteModal}>
-            Cancelar
-          </Button>
+          <Button variant="secondary" onClick={handleCloseDeleteModal}>Cancelar</Button>
           <Button variant="danger" onClick={handleConfirmDelete} disabled={saving}>
             {saving ? 'Desactivando...' : 'Desactivar'}
           </Button>

@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext'
 
 const AdminProducts = () => {
 
-  const { token } = useContext(AuthContext)
+  const { fetchWithAuth } = useContext(AuthContext)
 
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -23,7 +23,6 @@ const AdminProducts = () => {
   const [feedback, setFeedback] = useState(null)
   const [showInactive, setShowInactive] = useState(false)
 
-  // Returns Bootstrap badge color based on stock level
   const getStockVariant = (stock) => {
     if (stock === 0) return 'danger'
     if (stock <= 10) return 'warning'
@@ -37,18 +36,14 @@ const AdminProducts = () => {
   const fetchProducts = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/products/all', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-  
+      const response = await fetchWithAuth('http://localhost:3000/products/all')
+
       if (response.ok) {
         const data = await response.json()
-        // Make sure data is an array before setting state
         setProducts(Array.isArray(data) ? data : [])
         return
       }
-  
-      // Fallback to public endpoint
+
       const fallback = await fetch('http://localhost:3000/products')
       if (fallback.ok) {
         const data = await fallback.json()
@@ -57,7 +52,6 @@ const AdminProducts = () => {
         setError('Error al obtener los productos')
         setProducts([])
       }
-  
     } catch (err) {
       setError(err.message)
       setProducts([])
@@ -106,12 +100,9 @@ const AdminProducts = () => {
     const method = isEditing ? 'PUT' : 'POST'
 
     try {
-      const response = await fetch(url, {
+      const response = await fetchWithAuth(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
 
@@ -134,9 +125,8 @@ const AdminProducts = () => {
   const handleDelete = async (product) => {
     setFeedback(null)
     try {
-      const response = await fetch(`http://localhost:3000/products/${product.id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetchWithAuth(`http://localhost:3000/products/${product.id}`, {
+        method: 'DELETE'
       })
 
       const data = await response.json()
@@ -155,9 +145,8 @@ const AdminProducts = () => {
   const handleRestore = async (product) => {
     setFeedback(null)
     try {
-      const response = await fetch(`http://localhost:3000/products/${product.id}/restore`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetchWithAuth(`http://localhost:3000/products/${product.id}/restore`, {
+        method: 'PATCH'
       })
 
       const data = await response.json()
@@ -275,7 +264,6 @@ const AdminProducts = () => {
         </tbody>
       </Table>
 
-      {/* Create / Edit modal */}
       <Modal show={showModal} onHide={handleCloseModal} centered>
         <Form onSubmit={handleSubmit}>
           <Modal.Header closeButton>
@@ -284,37 +272,17 @@ const AdminProducts = () => {
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-
             <Form.Group className="mb-3">
               <Form.Label>Nombre</Form.Label>
-              <Form.Control
-                type="text"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleFormChange}
-                required
-              />
+              <Form.Control type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} required />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>Marca</Form.Label>
-              <Form.Control
-                type="text"
-                name="marca"
-                value={formData.marca}
-                onChange={handleFormChange}
-                required
-              />
+              <Form.Control type="text" name="marca" value={formData.marca} onChange={handleFormChange} required />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>Categoría</Form.Label>
-              <Form.Select
-                name="categoria"
-                value={formData.categoria}
-                onChange={handleFormChange}
-                required
-              >
+              <Form.Select name="categoria" value={formData.categoria} onChange={handleFormChange} required>
                 <option value="">Seleccionar categoría</option>
                 <option value="Guitarras">Guitarras</option>
                 <option value="Bajos">Bajos</option>
@@ -324,54 +292,27 @@ const AdminProducts = () => {
                 <option value="Accesorios">Accesorios</option>
               </Form.Select>
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>Precio</Form.Label>
-              <Form.Control
-                type="number"
-                name="precio"
-                value={formData.precio}
-                onChange={handleFormChange}
-                required
-              />
+              <Form.Control type="number" name="precio" value={formData.precio} onChange={handleFormChange} required />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>Stock</Form.Label>
-              <Form.Control
-                type="number"
-                name="stock"
-                value={formData.stock}
-                onChange={handleFormChange}
-                min="0"
-                required
-              />
+              <Form.Control type="number" name="stock" value={formData.stock} onChange={handleFormChange} min="0" required />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>Descripción</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                name="descripcion"
-                value={formData.descripcion}
-                onChange={handleFormChange}
-                required
-              />
+              <Form.Control as="textarea" rows={3} name="descripcion" value={formData.descripcion} onChange={handleFormChange} required />
             </Form.Group>
-
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
-              Cancelar
-            </Button>
+            <Button variant="secondary" onClick={handleCloseModal}>Cancelar</Button>
             <Button variant="dark" type="submit" disabled={saving}>
               {saving ? 'Guardando...' : 'Guardar'}
             </Button>
           </Modal.Footer>
         </Form>
       </Modal>
-
     </div>
   )
 }

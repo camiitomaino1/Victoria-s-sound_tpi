@@ -7,7 +7,7 @@ import { AuthContext } from '../context/AuthContext'
 const Cart = () => {
 
   const { cart, removeFromCart, clearCart, increaseQuantity, decreaseQuantity } = useContext(CartContext)
-  const { token } = useContext(AuthContext)
+  const { token, fetchWithAuth } = useContext(AuthContext)
   const navigate = useNavigate()
 
   const [showRemoveModal, setShowRemoveModal] = useState(false)
@@ -62,15 +62,11 @@ const Cart = () => {
     setCheckoutError(null)
 
     try {
-      const response = await fetch('http://localhost:3000/orders', {
+      const response = await fetchWithAuth('http://localhost:3000/orders', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           total: totalPrice,
-          // Send cart items so the backend can verify and discount stock
           items: cart.map((item) => ({
             id: item.id,
             nombre: item.nombre,

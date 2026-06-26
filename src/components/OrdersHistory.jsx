@@ -5,22 +5,13 @@ import { AuthContext } from '../context/AuthContext'
 
 const OrdersHistory = () => {
 
-  // Get the token to authenticate requests
-  const { token } = useContext(AuthContext)
-
-  // Hook to navigate to order detail
+  const { fetchWithAuth } = useContext(AuthContext)
   const navigate = useNavigate()
 
-  // State for the list of orders
   const [orders, setOrders] = useState([])
-
-  // Loading state while fetching
   const [loading, setLoading] = useState(true)
-
-  // Error state if the fetch fails
   const [error, setError] = useState(null)
 
-  // Returns a Bootstrap badge color depending on the order status
   const getStatusVariant = (estado) => {
     const variants = {
       pendiente: 'warning',
@@ -31,7 +22,6 @@ const OrdersHistory = () => {
     return variants[estado] || 'secondary'
   }
 
-  // Format date string to a readable format
   const formatDate = (dateString) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('es-AR', {
@@ -43,18 +33,11 @@ const OrdersHistory = () => {
     })
   }
 
-  // Fetch orders when the component mounts
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch('http://localhost:3000/orders', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-
+        const response = await fetchWithAuth('http://localhost:3000/orders')
         if (!response.ok) throw new Error('Error al obtener los pedidos')
-
         const data = await response.json()
         setOrders(data)
       } catch (err) {
@@ -67,7 +50,6 @@ const OrdersHistory = () => {
     fetchOrders()
   }, [])
 
-  // Show loading spinner while fetching
   if (loading) {
     return (
       <Container className="mt-5 text-center">
@@ -77,7 +59,6 @@ const OrdersHistory = () => {
     )
   }
 
-  // Show error message if the fetch failed
   if (error) {
     return (
       <Container className="mt-4">
@@ -90,7 +71,6 @@ const OrdersHistory = () => {
     <Container className="mt-4">
       <h2 className="mb-4">Mis pedidos</h2>
 
-      {/* Empty state message */}
       {orders.length === 0 ? (
         <Alert variant="info">
           No tenés pedidos realizados todavía.
@@ -118,7 +98,6 @@ const OrdersHistory = () => {
                 <td>${order.total.toLocaleString()}</td>
                 <td>{formatDate(order.createdAt)}</td>
                 <td>
-                  {/* Navigate to order detail page */}
                   <Button
                     variant="outline-dark"
                     size="sm"
