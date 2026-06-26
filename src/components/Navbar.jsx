@@ -30,12 +30,7 @@ const Navbar = () => {
   };
 
   return (
-    <BsNavbar
-      bg="dark"
-      variant="dark"
-      expand="lg"
-      fixed="top"
-    >
+    <BsNavbar bg="dark" variant="dark" expand="lg" fixed="top">
       <Container>
         <BsNavbar.Brand as={Link} to="/">
           🎸 Victoria's Sound
@@ -64,12 +59,11 @@ const Navbar = () => {
             </Nav.Link>
 
             {/* Admin panel link */}
-            {user &&
-              (user.role === "admin" || user.role === "sysadmin") && (
-                <Nav.Link as={Link} to="/admin">
-                  <i className="bi bi-gear-fill"></i> Panel Admin
-                </Nav.Link>
-              )}
+            {user && (user.role === "admin" || user.role === "sysadmin") && (
+              <Nav.Link as={Link} to="/admin">
+                <i className="bi bi-gear-fill"></i> Panel Admin
+              </Nav.Link>
+            )}
 
             {/* Sysadmin users panel */}
             {user && user.role === "sysadmin" && (
@@ -85,12 +79,19 @@ const Navbar = () => {
                 id="user-dropdown"
                 align="end"
               >
+                {/* Link to user profile */}
+                <NavDropdown.Item as={Link} to="/profile">
+                  Mi perfil
+                </NavDropdown.Item>
+
+                {/* Link to order history */}
                 <NavDropdown.Item as={Link} to="/mis-pedidos">
                   Mis pedidos
                 </NavDropdown.Item>
 
                 <NavDropdown.Divider />
 
+                {/* Logout option */}
                 <NavDropdown.Item onClick={handleLogout}>
                   Cerrar sesión
                 </NavDropdown.Item>
@@ -100,7 +101,6 @@ const Navbar = () => {
                 <Nav.Link as={Link} to="/login">
                   Iniciar sesión
                 </Nav.Link>
-
                 <Nav.Link as={Link} to="/register">
                   Registrarse
                 </Nav.Link>
