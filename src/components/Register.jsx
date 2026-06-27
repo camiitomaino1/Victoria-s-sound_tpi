@@ -5,53 +5,51 @@ import { AuthContext } from '../context/AuthContext'
 
 const Register = () => {
 
-  // Get the register function from AuthContext
   const { register } = useContext(AuthContext)
-
-  // Hook to redirect the user after successful registration
   const navigate = useNavigate()
 
-  // State for the nombre input
   const [nombre, setNombre] = useState('')
-
-  // State for the email input
   const [email, setEmail] = useState('')
-
-  // State for the password input
   const [password, setPassword] = useState('')
-
-  // State for the error message
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState(null)
-
-  // State for the success message
   const [success, setSuccess] = useState(null)
-
-  // State for the loading indicator while the request is in progress
   const [loading, setLoading] = useState(false)
 
-  // Handler for form submission
+  // Regex that enforces: min 8 chars, uppercase, lowercase, number and special character
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/
+
+  // Validate password against the security regex
+  const isPasswordValid = (pwd) => passwordRegex.test(pwd)
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-
-    // Clear previous messages
     setError(null)
     setSuccess(null)
+
+    // Validate password strength before sending the request
+    if (!isPasswordValid(password)) {
+      setError('La contraseña debe tener al menos 8 caracteres e incluir una mayúscula, una minúscula, un número y un carácter especial.')
+      return
+    }
+
+    // Validate that both password fields match before sending the request
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden.')
+      return
+    }
+
     setLoading(true)
 
     try {
-      // Call the register function from AuthContext
       await register(nombre, email, password)
-
-      // Show success message before redirecting
       setSuccess('Cuenta creada correctamente. Redirigiendo al login...')
 
-      // Wait 2 seconds and redirect to login
       setTimeout(() => {
         navigate('/login')
       }, 2000)
 
     } catch (err) {
-      // Show the error message returned by the API
       setError(err.message)
     } finally {
       setLoading(false)
@@ -62,17 +60,11 @@ const Register = () => {
     <Container className="mt-5" style={{ maxWidth: '400px' }}>
       <h2 className="mb-4">Crear cuenta</h2>
 
-      {/* Show error message if registration failed */}
-      {error && (
-        <Alert variant="danger">{error}</Alert>
-      )}
-
-      {/* Show success message if registration was successful */}
-      {success && (
-        <Alert variant="success">{success}</Alert>
-      )}
+      {error && <Alert variant="danger">{error}</Alert>}
+      {success && <Alert variant="success">{success}</Alert>}
 
       <Form onSubmit={handleSubmit}>
+
         <Form.Group className="mb-3">
           <Form.Label>Nombre</Form.Label>
           <Form.Control
@@ -80,6 +72,7 @@ const Register = () => {
             placeholder="Tu nombre"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
+            required
           />
         </Form.Group>
 
@@ -90,6 +83,7 @@ const Register = () => {
             placeholder="tu@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
         </Form.Group>
 
@@ -100,7 +94,35 @@ const Register = () => {
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
+          {/* Password requirements hint shown while the user types */}
+          <Form.Text className="text-muted">
+            La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>Confirmar contraseña</Form.Label>
+          <Form.Control
+            type="password"
+            placeholder="••••••••"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+          {/* Live feedback if passwords don't match while the user types */}
+          {confirmPassword && password !== confirmPassword && (
+            <Form.Text className="text-danger">
+              Las contraseñas no coinciden.
+            </Form.Text>
+          )}
+          {/* Positive feedback when passwords match */}
+          {confirmPassword && password === confirmPassword && (
+            <Form.Text className="text-success">
+              Las contraseñas coinciden.
+            </Form.Text>
+          )}
         </Form.Group>
 
         <Button
@@ -111,6 +133,7 @@ const Register = () => {
         >
           {loading ? 'Creando cuenta...' : 'Registrarse'}
         </Button>
+
       </Form>
 
       <p className="mt-3 text-center">
