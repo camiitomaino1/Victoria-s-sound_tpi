@@ -19,7 +19,6 @@ const Cart = () => {
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0)
   const totalPrice = cart.reduce((total, item) => total + item.precio * item.quantity, 0)
 
-  // Check if any item in the cart exceeds available stock
   const hasStockIssues = cart.some(
     (item) => item.stock !== undefined && item.quantity > item.stock
   )
@@ -76,10 +75,7 @@ const Cart = () => {
       })
 
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message)
-      }
+      if (!response.ok) throw new Error(data.message)
 
       const purchasedItems = [...cart]
       clearCart()
@@ -107,7 +103,6 @@ const Cart = () => {
         <Alert variant="danger">{checkoutError}</Alert>
       )}
 
-      {/* Stock issue warning */}
       {hasStockIssues && (
         <Alert variant="warning">
           Algunos productos en tu carrito superan el stock disponible. Ajustá las cantidades antes de continuar.
@@ -133,14 +128,11 @@ const Cart = () => {
             </thead>
             <tbody>
               {cart.map((item) => {
-                // Check if this item exceeds available stock
                 const exceedsStock = item.stock !== undefined && item.quantity > item.stock
-
                 return (
                   <tr key={item.id} className={exceedsStock ? 'table-warning' : ''}>
                     <td>
                       {item.nombre}
-                      {/* Warn if quantity exceeds stock */}
                       {exceedsStock && (
                         <div className="text-danger small mt-1">
                           Stock disponible: {item.stock}
@@ -167,7 +159,6 @@ const Cart = () => {
                           variant="outline-dark"
                           size="sm"
                           onClick={() => increaseQuantity(item.id)}
-                          // Disable if quantity already reaches stock limit
                           disabled={item.stock !== undefined && item.quantity >= item.stock}
                         >
                           +
@@ -197,7 +188,6 @@ const Cart = () => {
             <h5>
               Total de compra: <strong>${totalPrice.toLocaleString()}</strong>
             </h5>
-
             <div className="d-flex gap-2 flex-wrap justify-content-end">
               <Button variant="outline-secondary" onClick={() => navigate('/products')}>
                 Seguir comprando
@@ -208,7 +198,6 @@ const Cart = () => {
               <Button
                 variant="dark"
                 onClick={handleCheckout}
-                // Disable if not logged in, loading, or stock issues exist
                 disabled={loadingCheckout || !token || hasStockIssues}
               >
                 {loadingCheckout ? (
@@ -221,7 +210,6 @@ const Cart = () => {
                 )}
               </Button>
             </div>
-
             {!token && (
               <p className="text-muted small mt-1">
                 Debés <a href="/login">iniciar sesión</a> para finalizar la compra.
@@ -231,7 +219,6 @@ const Cart = () => {
         </>
       )}
 
-      {/* Modal: confirm remove single product */}
       <Modal show={showRemoveModal} onHide={handleCancelRemove} centered>
         <Modal.Header closeButton>
           <Modal.Title>Eliminar producto</Modal.Title>
@@ -250,7 +237,6 @@ const Cart = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Modal: confirm clear entire cart */}
       <Modal show={showClearModal} onHide={handleCancelClear} centered>
         <Modal.Header closeButton>
           <Modal.Title>Vaciar carrito</Modal.Title>

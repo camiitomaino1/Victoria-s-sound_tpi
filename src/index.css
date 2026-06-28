@@ -1,23 +1,798 @@
-hhtml {
-  scroll-behavior: smooth;
-}
+/* ============================================
+   GOOGLE FONTS IMPORT
+   ============================================ */
+   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-html,
-body,
-#root {
-  min-height: 100vh;
-  margin: 0;
-}
-
-body {
-  padding-top: 70px;
-}
-
-#root {
-  display: flex;
-  flex-direction: column;
-}
-
-main {
-  flex: 1;
-}
+   /* ============================================
+      CSS VARIABLES - VICTORIA'S SOUND PALETTE
+      ============================================ */
+   :root {
+     --bg-main: #0B090A;
+     --bg-surface: #161A1D;
+     --color-primary: #7B2CBF;
+     --color-secondary: #9D4EDD;
+     --navbar-bg: #1A0533;
+     --footer-bg: #1A0533;
+     --text-main: #F5F3F4;
+     --text-secondary: #A2A2A2;
+     --text-description: #D0CDD1;
+     --transition-speed: 0.3s;
+   }
+   
+   /* ============================================
+      GLOBAL BACKGROUND - INDESTRUCTIBLE DARK MODE
+      ============================================ */
+   html,
+   body,
+   #root {
+     min-height: 100vh;
+     margin: 0;
+     background-color: var(--bg-main) !important;
+     color: var(--text-main) !important;
+   }
+   
+   body {
+     padding-top: 70px;
+     font-family: 'Poppins', sans-serif;
+     background-color: var(--bg-main) !important;
+   }
+   
+   #root {
+     display: flex;
+     flex-direction: column;
+     background-color: var(--bg-main) !important;
+   }
+   
+   html {
+     scroll-behavior: smooth;
+   }
+   
+   /* Override Bootstrap containers */
+   .container,
+   .container-fluid,
+   .container-sm,
+   .container-md,
+   .container-lg,
+   .container-xl,
+   .container-xxl {
+     background-color: transparent !important;
+     color: var(--text-main) !important;
+   }
+   
+   /* Override Bootstrap row and col */
+   .row,
+   [class*="col-"],
+   .col {
+     background-color: transparent !important;
+   }
+   
+   section,
+   main,
+   article,
+   aside {
+     background-color: transparent !important;
+     color: var(--text-main) !important;
+   }
+   
+   main {
+     flex: 1;
+   }
+   
+   /* ============================================
+      TYPOGRAPHY
+      ============================================ */
+   h1, h2, h3, h4, h5, h6 {
+     font-family: 'Poppins', sans-serif;
+     color: var(--text-main) !important;
+   }
+   
+   p, span, label, td, th, li {
+     font-family: 'Poppins', sans-serif;
+   }
+   
+   .text-muted {
+     color: var(--text-secondary) !important;
+   }
+   
+   .text-dark {
+     color: var(--text-main) !important;
+   }
+   
+   .bg-white,
+   .bg-light {
+     background-color: var(--bg-surface) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .bg-body,
+   .bg-body-secondary,
+   .bg-body-tertiary {
+     background-color: var(--bg-main) !important;
+     color: var(--text-main) !important;
+   }
+   
+   strong, b {
+     color: var(--text-main) !important;
+   }
+   
+   .small, small {
+     color: var(--text-secondary) !important;
+   }
+   
+   .fs-5 {
+     color: var(--text-main) !important;
+   }
+   
+   /* ============================================
+      NAVBAR OVERRIDES
+      ============================================ */
+   .navbar {
+     background-color: var(--navbar-bg) !important;
+     border-bottom: 1px solid var(--color-primary);
+   }
+   
+   /* Navbar logo size */
+   .navbar-brand img {
+     height: 65px;
+     object-fit: contain;
+   }
+   
+   .nav-link {
+     color: var(--text-main) !important;
+     transition: color var(--transition-speed) ease;
+     font-weight: 500;
+   }
+   
+   .nav-link:hover,
+   .nav-link:focus {
+     color: var(--color-secondary) !important;
+   }
+   
+   .navbar-toggler {
+     border-color: var(--color-primary) !important;
+   }
+   
+   .navbar-toggler-icon {
+     filter: invert(1);
+   }
+   
+   .dropdown-menu {
+     background-color: var(--navbar-bg) !important;
+     border: 1px solid var(--color-primary) !important;
+   }
+   
+   .dropdown-item {
+     color: var(--text-main) !important;
+     font-family: 'Poppins', sans-serif;
+     transition: background-color var(--transition-speed) ease,
+                 color var(--transition-speed) ease;
+   }
+   
+   .dropdown-item:hover {
+     background-color: var(--color-primary) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .dropdown-divider {
+     border-color: var(--color-secondary) !important;
+     opacity: 0.3;
+   }
+   
+   /* Cart icon badge positioned over the icon */
+   .cart-icon-wrapper {
+     position: relative;
+     display: inline-flex;
+     align-items: center;
+   }
+   
+   .cart-badge {
+     position: absolute;
+     top: -8px;
+     right: -10px;
+     font-size: 0.65rem !important;
+     padding: 0.2em 0.45em !important;
+     min-width: 18px;
+     height: 18px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     border-radius: 50% !important;
+     background-color: var(--color-secondary) !important;
+     border: 2px solid var(--navbar-bg);
+   }
+   
+   /* ============================================
+      BUTTONS OVERRIDES
+      ============================================ */
+   .btn {
+     font-family: 'Poppins', sans-serif;
+     font-weight: 500;
+     transition: all var(--transition-speed) ease !important;
+     border-radius: 6px;
+   }
+   
+   .btn-dark {
+     background-color: var(--color-primary) !important;
+     border-color: var(--color-primary) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .btn-dark:hover,
+   .btn-dark:focus {
+     background-color: var(--color-secondary) !important;
+     border-color: var(--color-secondary) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .btn-outline-dark {
+     border-color: var(--color-primary) !important;
+     color: var(--color-primary) !important;
+     background-color: transparent !important;
+   }
+   
+   .btn-outline-dark:hover,
+   .btn-outline-dark:focus {
+     background-color: var(--color-primary) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .btn-outline-secondary {
+     border-color: var(--text-secondary) !important;
+     color: var(--text-secondary) !important;
+     background-color: transparent !important;
+   }
+   
+   .btn-outline-secondary:hover {
+     background-color: var(--text-secondary) !important;
+     color: var(--bg-main) !important;
+   }
+   
+   .btn-outline-danger {
+     transition: all var(--transition-speed) ease !important;
+   }
+   
+   .btn-outline-danger:hover {
+     background-color: #dc3545 !important;
+     color: var(--text-main) !important;
+   }
+   
+   .btn-outline-light {
+     border-color: var(--text-main) !important;
+     color: var(--text-main) !important;
+     background-color: transparent !important;
+   }
+   
+   .btn-outline-light:hover {
+     background-color: var(--text-main) !important;
+     color: var(--bg-main) !important;
+   }
+   
+   .btn-success {
+     transition: all var(--transition-speed) ease !important;
+   }
+   
+   .btn-group .btn-outline-dark {
+     border-color: var(--color-primary) !important;
+     color: var(--color-primary) !important;
+   }
+   
+   .btn-group .btn-dark {
+     background-color: var(--color-primary) !important;
+     border-color: var(--color-primary) !important;
+     color: var(--text-main) !important;
+   }
+   
+   /* ============================================
+      CARDS OVERRIDES
+      ============================================ */
+   .card {
+     background-color: var(--bg-surface) !important;
+     border: 1px solid var(--color-primary) !important;
+     color: var(--text-main) !important;
+     transition: transform var(--transition-speed) ease,
+                 box-shadow var(--transition-speed) ease;
+   }
+   
+   .card:hover {
+     transform: translateY(-3px);
+     box-shadow: 0 6px 20px rgba(123, 44, 191, 0.3) !important;
+   }
+   
+   .card-title {
+     color: var(--text-main) !important;
+   }
+   
+   /* Description text with improved contrast */
+   .card-text {
+     color: var(--text-description) !important;
+   }
+   
+   .card-header {
+     background-color: var(--bg-surface) !important;
+     border-bottom: 1px solid var(--color-primary) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .card-body {
+     background-color: var(--bg-surface) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .card-img-top {
+     background-color: var(--bg-surface) !important;
+   }
+   
+   .card a.text-dark {
+     color: var(--text-main) !important;
+   }
+   
+   .card a.text-dark:hover {
+     color: var(--color-secondary) !important;
+   }
+   
+   /* ============================================
+      FORMS OVERRIDES
+      ============================================ */
+   .form-control,
+   .form-select {
+     background-color: var(--bg-surface) !important;
+     border: 1px solid #444 !important;
+     color: var(--text-main) !important;
+     font-family: 'Poppins', sans-serif;
+     transition: border-color var(--transition-speed) ease,
+                 box-shadow var(--transition-speed) ease;
+   }
+   
+   .form-control:focus,
+   .form-select:focus {
+     border-color: var(--color-primary) !important;
+     box-shadow: 0 0 0 0.2rem rgba(123, 44, 191, 0.25) !important;
+     background-color: var(--bg-surface) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .form-control::placeholder {
+     color: var(--text-secondary) !important;
+     opacity: 0.7;
+   }
+   
+   .form-control:disabled,
+   .form-control[readonly] {
+     background-color: #1e2226 !important;
+     color: var(--text-secondary) !important;
+   }
+   
+   .form-label {
+     color: var(--text-main) !important;
+     font-weight: 500;
+   }
+   
+   .form-check-input:checked {
+     background-color: var(--color-primary) !important;
+     border-color: var(--color-primary) !important;
+   }
+   
+   .form-check-label {
+     color: var(--text-main) !important;
+   }
+   
+   .form-text {
+     font-family: 'Poppins', sans-serif;
+   }
+   
+   .form-select option {
+     background-color: var(--bg-surface) !important;
+     color: var(--text-main) !important;
+   }
+   
+   /* ============================================
+      TABLES OVERRIDES
+      ============================================ */
+   .table {
+     color: var(--text-main) !important;
+     border-color: #2a2a2a !important;
+     background-color: transparent !important;
+   }
+   
+   .table-dark th {
+     background-color: var(--color-primary) !important;
+     color: var(--text-main) !important;
+     border-color: var(--color-primary) !important;
+     font-weight: 600;
+   }
+   
+   .table-striped > tbody > tr:nth-of-type(odd) > * {
+     background-color: rgba(255, 255, 255, 0.02) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .table-striped > tbody > tr:nth-of-type(even) > * {
+     background-color: var(--bg-surface) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .table > :not(caption) > * > * {
+     background-color: transparent !important;
+     color: var(--text-main) !important;
+     border-color: #2a2a2a !important;
+   }
+   
+   .table-hover > tbody > tr:hover > * {
+     background-color: rgba(123, 44, 191, 0.1) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .table-secondary td,
+   .table-secondary th {
+     background-color: rgba(255, 255, 255, 0.03) !important;
+     color: var(--text-secondary) !important;
+   }
+   
+   .table-warning td,
+   .table-warning th {
+     background-color: rgba(255, 193, 7, 0.1) !important;
+   }
+   
+   /* ============================================
+      ALERTS OVERRIDES
+      ============================================ */
+   .alert {
+     font-family: 'Poppins', sans-serif;
+     border-radius: 8px;
+   }
+   
+   .alert-info {
+     background-color: rgba(13, 202, 240, 0.1) !important;
+     border-color: rgba(13, 202, 240, 0.3) !important;
+     color: #0dcaf0 !important;
+   }
+   
+   .alert-success {
+     background-color: rgba(25, 135, 84, 0.1) !important;
+     border-color: rgba(25, 135, 84, 0.3) !important;
+     color: #75b798 !important;
+   }
+   
+   .alert-danger {
+     background-color: rgba(220, 53, 69, 0.1) !important;
+     border-color: rgba(220, 53, 69, 0.3) !important;
+     color: #ea868f !important;
+   }
+   
+   .alert-warning {
+     background-color: rgba(255, 193, 7, 0.1) !important;
+     border-color: rgba(255, 193, 7, 0.3) !important;
+     color: #ffda6a !important;
+   }
+   
+   /* ============================================
+      MODALS OVERRIDES
+      ============================================ */
+   .modal-content {
+     background-color: var(--bg-surface) !important;
+     border: 1px solid var(--color-primary) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .modal-header {
+     background-color: var(--bg-surface) !important;
+     border-bottom: 1px solid var(--color-primary) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .modal-title {
+     color: var(--text-main) !important;
+     font-family: 'Poppins', sans-serif;
+     font-weight: 600;
+   }
+   
+   .modal-body {
+     background-color: var(--bg-surface) !important;
+     color: var(--text-main) !important;
+   }
+   
+   .modal-footer {
+     background-color: var(--bg-surface) !important;
+     border-top: 1px solid var(--color-primary) !important;
+   }
+   
+   .modal-backdrop {
+     background-color: rgba(11, 9, 10, 0.85) !important;
+   }
+   
+   .btn-close {
+     filter: invert(1);
+   }
+   
+   /* ============================================
+      BADGES OVERRIDES
+      ============================================ */
+   .badge {
+     font-family: 'Poppins', sans-serif;
+     font-weight: 500;
+   }
+   
+   /* ============================================
+      TABS OVERRIDES
+      ============================================ */
+   .nav-tabs {
+     border-bottom: 1px solid var(--color-primary) !important;
+     background-color: transparent !important;
+   }
+   
+   .nav-tabs .nav-link {
+     color: var(--text-secondary) !important;
+     border: none !important;
+     font-weight: 500;
+     background-color: transparent !important;
+     transition: color var(--transition-speed) ease !important;
+   }
+   
+   .nav-tabs .nav-link:hover {
+     color: var(--color-secondary) !important;
+     background-color: transparent !important;
+   }
+   
+   .nav-tabs .nav-link.active {
+     background-color: transparent !important;
+     border-bottom: 2px solid var(--color-primary) !important;
+     color: var(--color-primary) !important;
+   }
+   
+   .tab-content {
+     background-color: transparent !important;
+     color: var(--text-main) !important;
+   }
+   
+   .tab-pane {
+     background-color: transparent !important;
+   }
+   
+   /* ============================================
+      FOOTER OVERRIDES
+      ============================================ */
+   footer {
+     background-color: var(--footer-bg) !important;
+     border-top: 1px solid var(--color-primary) !important;
+   }
+   
+   /* Footer logos size */
+   .footer-logo-store {
+     height: 65px;
+     object-fit: contain;
+     filter: brightness(0) invert(1);
+     opacity: 0.9;
+   }
+   
+   .footer-logo-utn {
+     height: 65px;
+     object-fit: contain;
+     filter: brightness(0) invert(1);
+     opacity: 0.85;
+   }
+   
+   .footer-title {
+     color: var(--text-main) !important;
+     font-weight: 600;
+     font-size: 0.95rem;
+     margin-bottom: 0;
+   }
+   
+   .footer-subtitle {
+     color: var(--text-secondary) !important;
+     font-size: 0.85rem;
+     margin-bottom: 0;
+   }
+   
+   .footer-tagline {
+     color: var(--text-secondary) !important;
+     font-size: 0.8rem;
+     font-style: italic;
+     margin-bottom: 0;
+   }
+   
+   .footer-copy {
+     color: var(--text-secondary) !important;
+     font-size: 0.78rem;
+   }
+   
+   /* ============================================
+      LINKS
+      ============================================ */
+   a {
+     color: var(--color-primary);
+     transition: color var(--transition-speed) ease;
+     text-decoration: none;
+   }
+   
+   a:hover {
+     color: var(--color-secondary);
+   }
+   
+   /* ============================================
+      HERO SECTION
+      ============================================ */
+   .hero-section {
+     background-image: url('/src/assets/banner.png');
+     background-size: cover;
+     background-position: center;
+     background-repeat: no-repeat;
+     min-height: 500px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     position: relative;
+   }
+   
+   .hero-section::before {
+     content: '';
+     position: absolute;
+     inset: 0;
+     background: rgba(11, 9, 10, 0.65);
+   }
+   
+   .hero-content {
+     position: relative;
+     z-index: 1;
+     text-align: center;
+     padding: 2rem;
+     max-width: 700px;
+   }
+   
+   .hero-title {
+     font-size: 2.5rem;
+     font-weight: 700;
+     color: var(--text-main) !important;
+     line-height: 1.2;
+     margin-bottom: 1rem;
+   }
+   
+   .hero-subtitle {
+     font-size: 1.1rem;
+     color: var(--text-description) !important;
+     margin-bottom: 2rem;
+   }
+   
+   .hero-cta {
+     background-color: var(--color-primary) !important;
+     border-color: var(--color-primary) !important;
+     color: var(--text-main) !important;
+     padding: 0.75rem 2rem;
+     font-size: 1rem;
+     font-weight: 600;
+     border-radius: 8px;
+     transition: all var(--transition-speed) ease !important;
+   }
+   
+   .hero-cta:hover {
+     background-color: var(--color-secondary) !important;
+     border-color: var(--color-secondary) !important;
+     transform: translateY(-2px);
+     box-shadow: 0 8px 20px rgba(123, 44, 191, 0.4) !important;
+   }
+   
+   /* ============================================
+      SPINNER
+      ============================================ */
+   .spinner-border {
+     color: var(--color-primary) !important;
+   }
+   
+   /* ============================================
+      SCROLLBAR
+      ============================================ */
+   ::-webkit-scrollbar {
+     width: 6px;
+   }
+   
+   ::-webkit-scrollbar-track {
+     background: var(--bg-main);
+   }
+   
+   ::-webkit-scrollbar-thumb {
+     background: var(--color-primary);
+     border-radius: 3px;
+   }
+   
+   ::-webkit-scrollbar-thumb:hover {
+     background: var(--color-secondary);
+   }
+   
+   /* ============================================
+      UTILITY OVERRIDES
+      ============================================ */
+   .fw-bold {
+     color: inherit;
+   }
+   
+   /* Product detail image without style inline */
+   .product-detail-img {
+     height: 400px;
+     object-fit: cover;
+     border-radius: 8px;
+     width: 100%;
+   }
+   
+   /* Product detail placeholder when no image */
+   .product-detail-no-img {
+     height: 400px;
+     border-radius: 8px;
+     background-color: var(--bg-surface);
+   }
+   
+   /* Profile container max width without style inline */
+   .profile-container {
+     max-width: 700px;
+   }
+   
+   /* Select auto width in tables without style inline */
+   .select-auto-width {
+     width: auto !important;
+   }
+   
+   /* Input group icon dark style */
+   .input-group-icon {
+     background-color: var(--bg-surface) !important;
+     border: 1px solid #444 !important;
+     border-right: none !important;
+     color: var(--text-secondary) !important;
+   }
+   
+   /* Home description text - lighter tone for better readability */
+   .home-description {
+     color: #A2A2A2 !important;
+   }
+   
+   /* Description text with improved contrast */
+   .product-description {
+     color: var(--text-description) !important;
+   }
+   
+   /* ============================================
+      FILTER LABELS
+      ============================================ */
+   .filter-label {
+     color: var(--text-main) !important;
+     font-size: 0.8rem;
+     font-weight: 600;
+     margin-bottom: 4px;
+     display: block;
+   }
+   
+   /* ============================================
+      RESPONSIVE ADJUSTMENTS
+      ============================================ */
+   @media (max-width: 768px) {
+     .hero-title {
+       font-size: 1.8rem;
+     }
+   
+     .hero-subtitle {
+       font-size: 0.95rem;
+     }
+   
+     body {
+       padding-top: 60px;
+     }
+   
+     .navbar-brand img {
+       height: 50px;
+     }
+   
+     footer .col-md-4 {
+       text-align: center !important;
+     }
+   
+     .footer-logo-store,
+     .footer-logo-utn {
+       height: 50px;
+     }
+   
+     .product-detail-img {
+       height: 280px;
+     }
+   
+     .profile-container {
+       max-width: 100%;
+     }
+   }

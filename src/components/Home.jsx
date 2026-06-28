@@ -3,15 +3,35 @@ import { Link } from 'react-router-dom'
 
 const Home = () => {
   return (
-    <Container className="text-center mt-5">
-      <h1>Bienvenid@ a Victoria´s Sound 🎵</h1>
-      <p className="lead mt-3">
-        Encontrá los mejores instrumentos musicales al mejor precio.
-      </p>
-      <Button as={Link} to="/products" variant="dark" size="lg" className="mt-3">
-        Ver productos
-      </Button>
-    </Container>
+    <>
+      {/* Hero section with banner background */}
+      <div className="hero-section">
+        <div className="hero-content">
+          <h1 className="hero-title">
+            Victoria's Sound: Tu Pasión, Nuestro Sonido
+          </h1>
+          <p className="hero-subtitle">
+            Explorá nuestra colección exclusiva de instrumentos de alta gama
+          </p>
+          <Button
+            as={Link}
+            to="/products"
+            className="hero-cta"
+            size="lg"
+          >
+            Ver Catálogo
+          </Button>
+        </div>
+      </div>
+
+      <Container className="mt-5 text-center">
+        <h2 className="mb-3">¿Por qué elegirnos?</h2>
+        <p className="home-description">
+          En Victoria's Sound encontrás instrumentos de las mejores marcas del mundo,
+          con asesoramiento personalizado y los mejores precios del mercado.
+        </p>
+      </Container>
+    </>
   )
 }
 

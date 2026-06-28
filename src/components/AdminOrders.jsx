@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react'
-import { Table, Form, Badge, Spinner, Alert, Row, Col, Button, Modal } from 'react-bootstrap'
+import { Table, Form, Badge, Spinner, Alert, Row, Col, Button, Modal, InputGroup } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 
@@ -141,30 +141,57 @@ const AdminOrders = () => {
         </Alert>
       )}
 
-      <Row className="mb-3 g-2">
+      {/* Filters row */}
+      <Row className="mb-4 g-3 align-items-end">
+
+        {/* Search by order id with icon */}
         <Col md={4}>
-          <Form.Control
-            type="text"
-            placeholder="Buscar por número de pedido..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <Form.Label className="small fw-bold mb-1">Buscar por número de pedido</Form.Label>
+          <InputGroup>
+            <InputGroup.Text className="input-group-icon">
+              <i className="bi bi-search"></i>
+            </InputGroup.Text>
+            <Form.Control
+              type="text"
+              placeholder="Ej: 12, 7, 23..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </InputGroup>
         </Col>
+
+        {/* Filter by status */}
         <Col md={4}>
-          <Form.Select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
+          <Form.Label className="small fw-bold mb-1">Estado del pedido</Form.Label>
+          <Form.Select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+          >
             <option value="Todos">Todos los estados</option>
             {statusOptions.map((status) => (
               <option key={status} value={status}>{status}</option>
             ))}
           </Form.Select>
         </Col>
+
+        {/* Sort by date */}
         <Col md={4}>
-          <Form.Select value={dateOrder} onChange={(e) => setDateOrder(e.target.value)}>
+          <Form.Label className="small fw-bold mb-1">Ordenar por fecha</Form.Label>
+          <Form.Select
+            value={dateOrder}
+            onChange={(e) => setDateOrder(e.target.value)}
+          >
             <option value="newest">Más recientes primero</option>
             <option value="oldest">Más antiguos primero</option>
           </Form.Select>
         </Col>
+
       </Row>
+
+      {/* Results counter */}
+      <p className="text-muted small mb-3">
+        Mostrando {filteredAndSortedOrders.length} de {orders.length} pedidos
+      </p>
 
       {filteredAndSortedOrders.length === 0 && (
         <Alert variant="info">No se encontraron pedidos con ese criterio.</Alert>
@@ -212,7 +239,7 @@ const AdminOrders = () => {
                       value={order.estado}
                       onChange={(e) => handleStatusChange(order.id, e.target.value)}
                       disabled={updatingId === order.id}
-                      style={{ width: 'auto' }}
+                      className="select-auto-width"
                     >
                       {statusOptions.map((status) => (
                         <option key={status} value={status}>{status}</option>

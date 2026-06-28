@@ -15,14 +15,12 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1)
   const [addedMessage, setAddedMessage] = useState(false)
 
-  // Returns Bootstrap color class based on stock level
   const getStockVariant = (stock) => {
     if (stock === 0) return 'danger'
     if (stock <= 10) return 'warning'
     return 'success'
   }
 
-  // Returns stock label text
   const getStockLabel = (stock) => {
     if (stock === 0) return 'Sin stock'
     if (stock <= 10) return `Stock bajo: ${stock} disponibles`
@@ -33,9 +31,7 @@ const ProductDetail = () => {
     const fetchProduct = async () => {
       try {
         const response = await fetch(`http://localhost:3000/products/${id}`)
-
         if (!response.ok) throw new Error('Producto no encontrado')
-
         const data = await response.json()
         setProduct(data)
       } catch (err) {
@@ -48,12 +44,10 @@ const ProductDetail = () => {
     fetchProduct()
   }, [id])
 
-  // Increase quantity, cannot exceed available stock
   const handleIncrease = () => {
     setQuantity((prev) => (prev < product.stock ? prev + 1 : prev))
   }
 
-  // Decrease quantity, minimum is 1
   const handleDecrease = () => {
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1))
   }
@@ -100,16 +94,14 @@ const ProductDetail = () => {
           <Card className="border-0 shadow-sm">
             {product.imagen ? (
               <Card.Img
+                variant="top"
                 src={product.imagen}
                 alt={product.nombre}
-                style={{ height: '400px', objectFit: 'cover', borderRadius: '8px' }}
+                className="product-detail-img"
               />
             ) : (
-              <div
-                className="bg-secondary d-flex align-items-center justify-content-center"
-                style={{ height: '400px', borderRadius: '8px' }}
-              >
-                <p className="text-white">Sin imagen</p>
+              <div className="product-detail-no-img d-flex align-items-center justify-content-center">
+                <p className="text-white mb-0">Sin imagen</p>
               </div>
             )}
           </Card>
@@ -122,29 +114,26 @@ const ProductDetail = () => {
             <Badge bg="secondary" className="ms-2 mt-1">{product.categoria}</Badge>
           </div>
 
-          <p className="text-muted mb-1">
-            <strong>Marca:</strong> {product.marca}
+          <p className="mb-1">
+            <strong>Marca:</strong>{' '}
+            <span className="product-description">{product.marca}</span>
           </p>
 
-          <p className="text-muted mb-3">{product.descripcion}</p>
+          <p className="mb-3 product-description">
+            {product.descripcion}
+          </p>
 
           <h3 className="mb-3">${product.precio.toLocaleString()}</h3>
 
-          {/* Stock indicator with color coding */}
           <p className={`fw-bold text-${getStockVariant(product.stock)} mb-4`}>
             {getStockLabel(product.stock)}
           </p>
 
-          {/* Quantity selector: hidden if no stock */}
           {product.stock > 0 && (
             <div className="d-flex align-items-center gap-3 mb-4">
               <span className="fw-bold">Cantidad:</span>
               <div className="d-flex align-items-center gap-2">
-                <Button
-                  variant="outline-dark"
-                  size="sm"
-                  onClick={handleDecrease}
-                >
+                <Button variant="outline-dark" size="sm" onClick={handleDecrease}>
                   −
                 </Button>
                 <span className="fs-5 px-2">{quantity}</span>
@@ -152,7 +141,6 @@ const ProductDetail = () => {
                   variant="outline-dark"
                   size="sm"
                   onClick={handleIncrease}
-                  // Disable if quantity already reaches max stock
                   disabled={quantity >= product.stock}
                 >
                   +
@@ -161,12 +149,10 @@ const ProductDetail = () => {
             </div>
           )}
 
-          {/* Action buttons */}
-          <div className="d-flex gap-3">
+          <div className="d-flex gap-3 flex-wrap">
             <Button
               variant="dark"
               onClick={handleAddToCart}
-              // Disable if no stock available
               disabled={product.stock === 0}
             >
               {product.stock === 0 ? 'Sin stock' : (

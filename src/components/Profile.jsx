@@ -156,11 +156,11 @@ const Profile = () => {
   }
 
   return (
-    <Container className="mt-4" style={{ maxWidth: '700px' }}>
+    <Container className="mt-4 profile-container">
       <h2 className="mb-4">Mi perfil</h2>
 
       <Card className="shadow-sm mb-4">
-        <Card.Header className="bg-dark text-white d-flex justify-content-between align-items-center">
+        <Card.Header className="d-flex justify-content-between align-items-center">
           <span>Información personal</span>
           {!editingProfile && (
             <Button variant="outline-light" size="sm" onClick={() => setEditingProfile(true)}>
@@ -239,7 +239,7 @@ const Profile = () => {
       </Card>
 
       <Card className="shadow-sm">
-        <Card.Header className="bg-dark text-white d-flex justify-content-between align-items-center">
+        <Card.Header className="d-flex justify-content-between align-items-center">
           <span>Cambiar contraseña</span>
           {!editingPassword && (
             <Button variant="outline-light" size="sm" onClick={() => setEditingPassword(true)}>
@@ -308,6 +308,7 @@ const Profile = () => {
           )}
         </Card.Body>
       </Card>
+
     </Container>
   )
 }
