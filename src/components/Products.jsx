@@ -49,8 +49,13 @@ const Products = () => {
 
   const activePriceRange = priceRanges.find((r) => r.value === selectedPrice)
 
+  // Search matches name, category OR brand simultaneously
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.nombre.toLowerCase().includes(search.toLowerCase())
+    const searchLower = search.toLowerCase()
+    const matchesSearch =
+      product.nombre.toLowerCase().includes(searchLower) ||
+      product.categoria.toLowerCase().includes(searchLower) ||
+      product.marca.toLowerCase().includes(searchLower)
     const matchesCategory = selectedCategory === 'Todas' || product.categoria === selectedCategory
     const matchesBrand = selectedBrand === 'Todas' || product.marca === selectedBrand
     const matchesPrice = activePriceRange ? activePriceRange.filter(product.precio) : true
@@ -86,24 +91,23 @@ const Products = () => {
     <Container className="mt-4">
       <h2 className="mb-4">Nuestros Instrumentos</h2>
 
+      {/* Search bar on top, searches by name, category and brand */}
+      <InputGroup className="mb-3">
+        <InputGroup.Text className="input-group-icon">
+          <i className="bi bi-search"></i>
+        </InputGroup.Text>
+        <Form.Control
+          type="text"
+          placeholder="Buscar por nombre, categoría o marca..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </InputGroup>
+
+      {/* Secondary filters row */}
       <Row className="mb-4 g-3 align-items-end">
 
-        <Col md={3}>
-          <Form.Label className="small fw-bold mb-1">Buscar por nombre</Form.Label>
-          <InputGroup>
-            <InputGroup.Text className="input-group-icon">
-              <i className="bi bi-search"></i>
-            </InputGroup.Text>
-            <Form.Control
-              type="text"
-              placeholder="Ej: Guitarra, Piano..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </InputGroup>
-        </Col>
-
-        <Col md={3}>
+        <Col md={4}>
           <Form.Label className="small fw-bold mb-1">Categoría</Form.Label>
           <Form.Select
             value={selectedCategory}
@@ -117,7 +121,7 @@ const Products = () => {
           </Form.Select>
         </Col>
 
-        <Col md={3}>
+        <Col md={4}>
           <Form.Label className="small fw-bold mb-1">Marca</Form.Label>
           <Form.Select
             value={selectedBrand}
@@ -131,7 +135,7 @@ const Products = () => {
           </Form.Select>
         </Col>
 
-        <Col md={3}>
+        <Col md={4}>
           <Form.Label className="small fw-bold mb-1">Rango de precio</Form.Label>
           <Form.Select
             value={selectedPrice}
@@ -147,6 +151,7 @@ const Products = () => {
 
       </Row>
 
+      {/* Results counter and reset button */}
       {hasActiveFilters && (
         <div className="mb-4 d-flex align-items-center gap-3">
           <span className="text-muted small">
