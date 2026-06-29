@@ -1,38 +1,90 @@
 import { useContext } from 'react'
-import { Link } from 'react-router-dom'
-import { Navbar as BsNavbar, Nav, Container, Badge } from 'react-bootstrap'
+import { Link, useNavigate } from 'react-router-dom'
+import { Navbar as BsNavbar, Nav, Container, Badge, NavDropdown } from 'react-bootstrap'
 import { CartContext } from '../context/CartContext'
+import { AuthContext } from '../context/AuthContext'
+import logo from '../assets/logo.png'
 
 const Navbar = () => {
 
-  // Connect to CartContext to read the cart state
   const { cart } = useContext(CartContext)
+  const { user, logout } = useContext(AuthContext)
+  const navigate = useNavigate()
 
-  // Calculate total number of items across all products
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0)
 
+  const handleLogout = () => {
+    logout()
+    navigate('/')
+  }
+
   return (
-    <BsNavbar bg="dark" variant="dark" expand="lg">
+    <BsNavbar expand="lg" fixed="top">
       <Container>
-        <BsNavbar.Brand as={Link} to="/">🎸 Victoria's Sound</BsNavbar.Brand>
+
+        {/* Logo image */}
+        <BsNavbar.Brand as={Link} to="/">
+          <img src={logo} alt="Victoria's Sound" />
+        </BsNavbar.Brand>
+
         <BsNavbar.Toggle aria-controls="main-nav" />
         <BsNavbar.Collapse id="main-nav">
-          <Nav className="ms-auto">
+          <Nav className="ms-auto align-items-center">
+
             <Nav.Link as={Link} to="/">Inicio</Nav.Link>
             <Nav.Link as={Link} to="/products">Productos</Nav.Link>
 
-            {/* Cart link with item counter badge */}
+            {/* Cart icon with badge positioned over the icon */}
             <Nav.Link as={Link} to="/cart">
-              Carrito{' '}
-              {totalItems > 0 && (
-                <Badge bg="danger" pill>
-                  {totalItems}
-                </Badge>
-              )}
+              <span className="cart-icon-wrapper">
+                <i className="bi bi-cart3 fs-5"></i>
+                {totalItems > 0 && (
+                  <Badge className="cart-badge">
+                    {totalItems}
+                  </Badge>
+                )}
+              </span>
             </Nav.Link>
 
-            <Nav.Link as={Link} to="/login">Iniciar sesión</Nav.Link>
-            <Nav.Link as={Link} to="/register">Registrarse</Nav.Link>
+            {/* Admin panel link: admin and sysadmin only */}
+            {user && (user.role === 'admin' || user.role === 'sysadmin') && (
+              <Nav.Link as={Link} to="/admin">
+                <i className="bi bi-gear-fill"></i> Panel Admin
+              </Nav.Link>
+            )}
+
+            {/* Users management link: sysadmin only */}
+            {user && user.role === 'sysadmin' && (
+              <Nav.Link as={Link} to="/admin/users">
+                <i className="bi bi-people-fill"></i> Usuarios
+              </Nav.Link>
+            )}
+
+            {/* User dropdown or login/register links */}
+            {user ? (
+              <NavDropdown
+                title={<span>👤 {user.nombre}</span>}
+                id="user-dropdown"
+                align="end"
+              >
+                <NavDropdown.Item as={Link} to="/profile">
+                  Mi perfil
+                </NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/mis-pedidos">
+                  Mis pedidos
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item onClick={handleLogout}>
+                  Cerrar sesión
+                </NavDropdown.Item>
+              </NavDropdown>
+            ) : (
+              <>
+                <Nav.Link as={Link} to="/login">Iniciar sesión</Nav.Link>
+                <Nav.Link as={Link} to="/register">Registrarse</Nav.Link>
+              </>
+            )}
+
           </Nav>
         </BsNavbar.Collapse>
       </Container>

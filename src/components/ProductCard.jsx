@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 import { Card, Badge, Button } from 'react-bootstrap'
+import { Link } from 'react-router-dom'
 import { CartContext } from '../context/CartContext'
 
 const ProductCard = ({ id, nombre, marca, categoria, precio, descripcion, imagen }) => {
@@ -10,7 +11,6 @@ const ProductCard = ({ id, nombre, marca, categoria, precio, descripcion, imagen
   // Build the product object to pass to addToCart
   const product = { id, nombre, marca, categoria, precio, descripcion, imagen }
 
-  // Handler for the "Add to cart" button
   const handleAddToCart = () => {
     addToCart(product)
   }
@@ -41,8 +41,13 @@ const ProductCard = ({ id, nombre, marca, categoria, precio, descripcion, imagen
 
         <div className="mt-3 d-flex justify-content-between align-items-center">
           <span className="fw-bold fs-5">${precio.toLocaleString()}</span>
-          <Button variant="dark" size="sm" onClick={handleAddToCart}>
-            Agregar al carrito
+          <Button
+            variant="dark"
+            size="sm"
+            onClick={handleAddToCart}
+            disabled={stock === 0}
+          >
+            {stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
           </Button>
         </div>
       </Card.Body>

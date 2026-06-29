@@ -15,9 +15,9 @@ const Products = () => {
 
   // State for the search input
   const [search, setSearch] = useState('')
-
-  // State for the selected category filter
   const [selectedCategory, setSelectedCategory] = useState('Todas')
+  const [selectedBrand, setSelectedBrand] = useState('Todas')
+  const [selectedPrice, setSelectedPrice] = useState('Todos')
 
   // Fetch products from the API when the component mounts
   useEffect(() => {
@@ -46,21 +46,40 @@ const Products = () => {
   // Extract unique categories from the fetched products and add "Todas"
   const categories = ['Todas', ...new Set(products.map((p) => p.categoria))]
 
-  // Handler for search input changes
-  const handleSearchChange = (e) => {
-    setSearch(e.target.value)
-  }
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/products')
+        if (!response.ok) throw new Error('Error al obtener los productos')
+        const data = await response.json()
+        setProducts(data)
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  // Handler for category button clicks
-  const handleCategoryChange = (category) => {
-    setSelectedCategory(category)
+    fetchProducts()
+  }, [])
+
+  const categories = ['Todas', ...new Set(products.map((p) => p.categoria))]
+  const brands = ['Todas', ...new Set(products.map((p) => p.marca))]
+
+  const handleResetFilters = () => {
+    setSearch('')
+    setSelectedCategory('Todas')
+    setSelectedBrand('Todas')
+    setSelectedPrice('Todos')
   }
 
   // Apply both filters combined: search and category
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.nombre.toLowerCase().includes(search.toLowerCase())
     const matchesCategory = selectedCategory === 'Todas' || product.categoria === selectedCategory
-    return matchesSearch && matchesCategory
+    const matchesBrand = selectedBrand === 'Todas' || product.marca === selectedBrand
+    const matchesPrice = activePriceRange ? activePriceRange.filter(product.precio) : true
+    return matchesSearch && matchesCategory && matchesBrand && matchesPrice
   })
 
   // Show loading spinner while fetching
@@ -88,34 +107,92 @@ const Products = () => {
     <Container className="mt-4">
       <h2 className="mb-4">Nuestros Instrumentos</h2>
 
-      {/* Search input */}
-      <Form.Control
-        type="text"
-        placeholder="Buscar instrumento..."
-        value={search}
-        onChange={handleSearchChange}
-        className="mb-3"
-      />
+      <Row className="mb-4 g-3 align-items-end">
 
-      {/* Category filter buttons */}
-      <ButtonGroup className="mb-4 flex-wrap">
-        {categories.map((category) => (
-          <Button
-            key={category}
-            variant={selectedCategory === category ? 'dark' : 'outline-dark'}
-            onClick={() => handleCategoryChange(category)}
+        {/* Search by name with icon */}
+        <Col md={3}>
+          <Form.Label className="small fw-bold mb-1">Buscar por nombre</Form.Label>
+          <InputGroup>
+            <InputGroup.Text className="input-group-icon">
+              <i className="bi bi-search"></i>
+            </InputGroup.Text>
+            <Form.Control
+              type="text"
+              placeholder="Ej: Guitarra, Piano..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </InputGroup>
+        </Col>
+
+        {/* Filter by category */}
+        <Col md={3}>
+          <Form.Label className="small fw-bold mb-1">Categoría</Form.Label>
+          <Form.Select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
           >
-            {category}
-          </Button>
-        ))}
-      </ButtonGroup>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category === 'Todas' ? 'Todas las categorías' : category}
+              </option>
+            ))}
+          </Form.Select>
+        </Col>
 
-      {/* No results message */}
-      {filteredProducts.length === 0 && (
-        <p className="text-muted">No se encontraron instrumentos con ese criterio.</p>
+        {/* Filter by brand */}
+        <Col md={3}>
+          <Form.Label className="small fw-bold mb-1">Marca</Form.Label>
+          <Form.Select
+            value={selectedBrand}
+            onChange={(e) => setSelectedBrand(e.target.value)}
+          >
+            {brands.map((brand) => (
+              <option key={brand} value={brand}>
+                {brand === 'Todas' ? 'Todas las marcas' : brand}
+              </option>
+            ))}
+          </Form.Select>
+        </Col>
+
+        {/* Filter by price range */}
+        <Col md={3}>
+          <Form.Label className="small fw-bold mb-1">Rango de precio</Form.Label>
+          <Form.Select
+            value={selectedPrice}
+            onChange={(e) => setSelectedPrice(e.target.value)}
+          >
+            {priceRanges.map((range) => (
+              <option key={range.value} value={range.value}>
+                {range.label}
+              </option>
+            ))}
+          </Form.Select>
+        </Col>
+
+      </Row>
+
+      {/* Reset filters and results counter */}
+      {hasActiveFilters && (
+        <div className="mb-4 d-flex align-items-center gap-3">
+          <span className="text-muted small">
+            Mostrando {filteredProducts.length} de {products.length} productos
+          </span>
+          <button
+            className="btn btn-outline-secondary btn-sm"
+            onClick={handleResetFilters}
+          >
+            Limpiar filtros
+          </button>
+        </div>
       )}
 
-      {/* Products grid */}
+      {filteredProducts.length === 0 && (
+        <Alert variant="info">
+          No se encontraron instrumentos con ese criterio.
+        </Alert>
+      )}
+
       <Row xs={1} sm={2} lg={3} className="g-4">
         {filteredProducts.map((product) => (
           <Col key={product.id}>
