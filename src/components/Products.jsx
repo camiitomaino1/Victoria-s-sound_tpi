@@ -1,24 +1,50 @@
 import { useState, useEffect } from 'react'
-import { Container, Row, Col, Form, InputGroup, Spinner, Alert } from 'react-bootstrap'
+import { Container, Row, Col, Form, ButtonGroup, Button, Spinner, Alert } from 'react-bootstrap'
 import ProductCard from './ProductCard'
 
 const Products = () => {
 
+  // State for products fetched from the API
   const [products, setProducts] = useState([])
+
+  // State for loading indicator
   const [loading, setLoading] = useState(true)
+
+  // State for error handling
   const [error, setError] = useState(null)
+
+  // State for the search input
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('Todas')
   const [selectedBrand, setSelectedBrand] = useState('Todas')
   const [selectedPrice, setSelectedPrice] = useState('Todos')
 
-  const priceRanges = [
-    { label: 'Todos los precios', value: 'Todos', filter: () => true },
-    { label: 'Menor a $1.000', value: 'lt1000', filter: (precio) => precio < 1000 },
-    { label: '$1.000 - $2.000', value: '1000to2000', filter: (precio) => precio >= 1000 && precio <= 2000 },
-    { label: '$2.000 - $3.500', value: '2000to3500', filter: (precio) => precio > 2000 && precio <= 3500 },
-    { label: 'Mayor a $3.500', value: 'gt3500', filter: (precio) => precio > 3500 }
-  ]
+  // Fetch products from the API when the component mounts
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/products')
+
+        // If the server responded with an error status, throw an error
+        if (!response.ok) {
+          throw new Error('Error al obtener los productos')
+        }
+
+        const data = await response.json()
+        setProducts(data)
+      } catch (error) {
+        setError(error.message)
+      } finally {
+        // Always stop the loading indicator, whether it succeeded or failed
+        setLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [])
+
+  // Extract unique categories from the fetched products and add "Todas"
+  const categories = ['Todas', ...new Set(products.map((p) => p.categoria))]
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -47,8 +73,7 @@ const Products = () => {
     setSelectedPrice('Todos')
   }
 
-  const activePriceRange = priceRanges.find((r) => r.value === selectedPrice)
-
+  // Apply both filters combined: search and category
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.nombre.toLowerCase().includes(search.toLowerCase())
     const matchesCategory = selectedCategory === 'Todas' || product.categoria === selectedCategory
@@ -57,12 +82,7 @@ const Products = () => {
     return matchesSearch && matchesCategory && matchesBrand && matchesPrice
   })
 
-  const hasActiveFilters =
-    search !== '' ||
-    selectedCategory !== 'Todas' ||
-    selectedBrand !== 'Todas' ||
-    selectedPrice !== 'Todos'
-
+  // Show loading spinner while fetching
   if (loading) {
     return (
       <Container className="mt-5 text-center">
@@ -72,6 +92,7 @@ const Products = () => {
     )
   }
 
+  // Show error message if the fetch failed
   if (error) {
     return (
       <Container className="mt-4">
@@ -183,7 +204,6 @@ const Products = () => {
               precio={product.precio}
               descripcion={product.descripcion}
               imagen={product.imagen}
-              stock={product.stock}
             />
           </Col>
         ))}
