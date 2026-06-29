@@ -32,7 +32,7 @@
    }
    
    body {
-     padding-top: 70px;
+     padding-top: 95px;
      font-family: 'Poppins', sans-serif;
      background-color: var(--bg-main) !important;
    }
@@ -705,7 +705,13 @@
      color: inherit;
    }
    
-   /* Product detail image without style inline */
+   /* Product card image */
+   .product-card-img {
+     height: 200px;
+     object-fit: cover;
+   }
+   
+   /* Product detail image */
    .product-detail-img {
      height: 400px;
      object-fit: cover;
@@ -720,12 +726,12 @@
      background-color: var(--bg-surface);
    }
    
-   /* Profile container max width without style inline */
+   /* Profile container max width */
    .profile-container {
      max-width: 700px;
    }
    
-   /* Select auto width in tables without style inline */
+   /* Select auto width in tables */
    .select-auto-width {
      width: auto !important;
    }
@@ -738,7 +744,7 @@
      color: var(--text-secondary) !important;
    }
    
-   /* Home description text - lighter tone for better readability */
+   /* Home description text */
    .home-description {
      color: #A2A2A2 !important;
    }
@@ -772,7 +778,7 @@
      }
    
      body {
-       padding-top: 60px;
+       padding-top: 75px;
      }
    
      .navbar-brand img {
