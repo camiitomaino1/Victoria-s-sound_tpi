@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Container, Card, Badge, Button, Spinner, Alert, Row, Col } from 'react-bootstrap'
+import { Container, Card, Badge, Button, Spinner, Alert, Row, Col, Table } from 'react-bootstrap'
 import { AuthContext } from '../context/AuthContext'
 
 const OrderDetail = () => {
@@ -69,50 +69,97 @@ const OrderDetail = () => {
     )
   }
 
+  // OrderItems may be empty for orders created before this feature was implemented
+  const items = order.OrderItems || []
+
   return (
     <Container className="mt-4">
       <h2 className="mb-4">Detalle del pedido #{order.id}</h2>
 
-      <Card className="shadow-sm">
+      <Card className="shadow-sm mb-4">
         <Card.Body>
           <Row className="g-3">
+
             <Col md={6}>
-              <p className="mb-1 text-muted">Número de pedido</p>
-              <p className="fw-bold fs-5">#{order.id}</p>
+              <p className="order-detail-label mb-1">Número de pedido</p>
+              <p className="order-detail-value fs-5">#{order.id}</p>
             </Col>
+
             <Col md={6}>
-              <p className="mb-1 text-muted">Fecha</p>
-              <p className="fw-bold">{formatDate(order.createdAt)}</p>
+              <p className="order-detail-label mb-1">Fecha</p>
+              <p className="order-detail-value">{formatDate(order.createdAt)}</p>
             </Col>
+
             <Col md={6}>
-              <p className="mb-1 text-muted">Estado</p>
+              <p className="order-detail-label mb-1">Estado</p>
               <Badge bg={getStatusVariant(order.estado)} className="fs-6">
                 {order.estado}
               </Badge>
             </Col>
+
             <Col md={6}>
-              <p className="mb-1 text-muted">Total</p>
-              <p className="fw-bold fs-5">${order.total.toLocaleString()}</p>
+              <p className="order-detail-label mb-1">Total</p>
+              <p className="order-detail-value fs-5">${order.total.toLocaleString()}</p>
             </Col>
+
             {order.User && (
               <>
                 <Col md={6}>
-                  <p className="mb-1 text-muted">Cliente</p>
-                  <p className="fw-bold">{order.User.nombre}</p>
+                  <p className="order-detail-label mb-1">Cliente</p>
+                  <p className="order-detail-value">{order.User.nombre}</p>
                 </Col>
                 <Col md={6}>
-                  <p className="mb-1 text-muted">Email</p>
-                  <p className="fw-bold">{order.User.email}</p>
+                  <p className="order-detail-label mb-1">Email</p>
+                  <p className="order-detail-value">{order.User.email}</p>
                 </Col>
               </>
             )}
+
           </Row>
         </Card.Body>
       </Card>
 
+      {/* Products table: only shown if the order has items */}
+      {items.length > 0 ? (
+        <Card className="shadow-sm">
+          <Card.Header>
+            <span className="order-detail-value">Productos del pedido</span>
+          </Card.Header>
+          <Card.Body>
+            <Table striped bordered hover responsive>
+              <thead className="table-dark">
+                <tr>
+                  <th>Producto</th>
+                  <th>Precio unitario</th>
+                  <th>Cantidad</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.nombreProducto}</td>
+                    <td>${item.precioUnitario.toLocaleString()}</td>
+                    <td>{item.cantidad}</td>
+                    <td>${(item.precioUnitario * item.cantidad).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Card.Body>
+        </Card>
+      ) : (
+        <Alert variant="info">
+          Este pedido no tiene detalle de productos disponible.
+        </Alert>
+      )}
+
       <div className="mt-4">
-        <Button variant="dark" onClick={() => navigate(-1)}>Volver</Button>
+        <Button variant="dark" onClick={() => navigate(-1)}>
+          Volver
+        </Button>
       </div>
+
     </Container>
   )
 }

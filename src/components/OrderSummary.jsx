@@ -1,13 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Container, Table, Badge, Button, Alert } from 'react-bootstrap'
+import { Container, Table, Badge, Button, Alert, Row, Col } from 'react-bootstrap'
 
 const OrderSummary = () => {
 
-  // Read the data passed from Cart.jsx via navigate state
   const { state } = useLocation()
   const navigate = useNavigate()
 
-  // If the user navigates here directly without completing a purchase, redirect to home
   if (!state || !state.items) {
     return (
       <Container className="mt-4">
@@ -19,21 +17,67 @@ const OrderSummary = () => {
     )
   }
 
-  const { items, total, orderId } = state
+  const { items, total, orderId, shippingMethod, paymentMethod, shippingAddress } = state
+
+  const shippingLabels = {
+    domicilio: 'Envío a domicilio',
+    retiro: 'Retiro en tienda'
+  }
+
+  const paymentLabels = {
+    tarjeta: 'Tarjeta de crédito/débito',
+    efectivo: 'Efectivo',
+    transferencia: 'Transferencia bancaria'
+  }
 
   return (
     <Container className="mt-4">
 
-      {/* Success header */}
       <div className="text-center mb-4">
         <i className="bi bi-check-circle-fill text-success" style={{ fontSize: '3rem' }}></i>
         <h2 className="mt-3">¡Compra realizada con éxito!</h2>
         <p className="text-muted">Número de pedido: <strong>#{orderId}</strong></p>
       </div>
 
+      {(shippingMethod || paymentMethod) && (
+        <Row className="mb-2 g-3">
+          {shippingMethod && (
+            <Col md={6}>
+              <p className="order-detail-label mb-1">Método de envío</p>
+              <p className="order-detail-value">
+                <i className="bi bi-truck me-2"></i>
+                {shippingLabels[shippingMethod]}
+              </p>
+            </Col>
+          )}
+          {paymentMethod && (
+            <Col md={6}>
+              <p className="order-detail-label mb-1">Método de pago</p>
+              <p className="order-detail-value">
+                <i className="bi bi-credit-card me-2"></i>
+                {paymentLabels[paymentMethod]}
+              </p>
+            </Col>
+          )}
+        </Row>
+      )}
+
+      {shippingAddress && (
+        <Row className="mb-4">
+          <Col>
+            <p className="order-detail-label mb-1">
+              {shippingMethod === 'retiro' ? 'Dirección de retiro' : 'Dirección de entrega'}
+            </p>
+            <p className="order-detail-value">
+              <i className="bi bi-geo-alt me-2"></i>
+              {shippingAddress}
+            </p>
+          </Col>
+        </Row>
+      )}
+
       <h5 className="mb-3">Resumen de tu pedido</h5>
 
-      {/* Order items table */}
       <Table striped bordered responsive>
         <thead className="table-dark">
           <tr>
@@ -59,15 +103,13 @@ const OrderSummary = () => {
         </tbody>
       </Table>
 
-      {/* Order total */}
       <div className="d-flex flex-column align-items-end gap-2 mb-4">
         <h5>
           Total abonado: <strong>${total.toLocaleString()}</strong>
         </h5>
       </div>
 
-      {/* Navigation buttons */}
-      <div className="d-flex justify-content-center gap-3">
+      <div className="d-flex justify-content-center">
         <Button variant="dark" onClick={() => navigate('/products')}>
           Seguir comprando
         </Button>

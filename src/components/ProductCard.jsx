@@ -1,11 +1,13 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { Card, Badge, Button } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { CartContext } from '../context/CartContext'
+import { AuthContext } from '../context/AuthContext'
 
-const ProductCard = ({ id, nombre, marca, categoria, precio, descripcion, imagen, stock }) => {
+const ProductCard = ({ id, nombre, marca, categoria, precio, descripcion, imagen, stock, isFavorite, onToggleFavorite }) => {
 
   const { addToCart } = useContext(CartContext)
+  const { user } = useContext(AuthContext)
 
   const product = { id, nombre, marca, categoria, precio, descripcion, imagen, stock }
 
@@ -16,7 +18,6 @@ const ProductCard = ({ id, nombre, marca, categoria, precio, descripcion, imagen
   return (
     <Card className="h-100 shadow-sm">
 
-      {/* Product image links to detail page */}
       <Link to={`/products/${id}`}>
         <Card.Img
           variant="top"
@@ -40,7 +41,6 @@ const ProductCard = ({ id, nombre, marca, categoria, precio, descripcion, imagen
 
         <Card.Text className="flex-grow-1">{descripcion}</Card.Text>
 
-        {/* Stock badge */}
         <div className="mb-2">
           <Badge bg={stock === 0 ? 'danger' : stock <= 10 ? 'warning' : 'success'}>
             {stock === 0 ? 'Sin stock' : `Stock: ${stock}`}
@@ -49,14 +49,27 @@ const ProductCard = ({ id, nombre, marca, categoria, precio, descripcion, imagen
 
         <div className="mt-2 d-flex justify-content-between align-items-center">
           <span className="fw-bold fs-5">${precio.toLocaleString()}</span>
-          <Button
-            variant="dark"
-            size="sm"
-            onClick={handleAddToCart}
-            disabled={stock === 0}
-          >
-            {stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
-          </Button>
+          <div className="d-flex gap-2">
+            {/* Favorite button: only shown for logged-in users */}
+            {user && (
+              <Button
+                variant={isFavorite ? 'danger' : 'outline-danger'}
+                size="sm"
+                onClick={onToggleFavorite}
+                title={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+              >
+                <i className={`bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'}`}></i>
+              </Button>
+            )}
+            <Button
+              variant="dark"
+              size="sm"
+              onClick={handleAddToCart}
+              disabled={stock === 0}
+            >
+              {stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
+            </Button>
+          </div>
         </div>
       </Card.Body>
     </Card>

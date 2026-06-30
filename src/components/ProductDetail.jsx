@@ -2,18 +2,24 @@ import { useState, useEffect, useContext } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container, Row, Col, Card, Badge, Button, Spinner, Alert } from 'react-bootstrap'
 import { CartContext } from '../context/CartContext'
+import { AuthContext } from '../context/AuthContext'
 
 const ProductDetail = () => {
 
   const { id } = useParams()
   const navigate = useNavigate()
   const { addToCart } = useContext(CartContext)
+  const { user, fetchWithAuth } = useContext(AuthContext)
 
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [quantity, setQuantity] = useState(1)
   const [addedMessage, setAddedMessage] = useState(false)
+
+  // Favorite state for this specific product
+  const [isFavorite, setIsFavorite] = useState(false)
+  const [favLoading, setFavLoading] = useState(false)
 
   const getStockVariant = (stock) => {
     if (stock === 0) return 'danger'
@@ -27,6 +33,7 @@ const ProductDetail = () => {
     return `Stock disponible: ${stock}`
   }
 
+  // Fetch product data
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -44,6 +51,25 @@ const ProductDetail = () => {
     fetchProduct()
   }, [id])
 
+  // Check if this product is already a favorite when the user is logged in
+  useEffect(() => {
+    if (!user) return
+
+    const checkFavorite = async () => {
+      try {
+        const response = await fetchWithAuth('http://localhost:3000/favorites')
+        if (!response.ok) return
+        const data = await response.json()
+        const favoriteIds = new Set(data.map((p) => p.id))
+        setIsFavorite(favoriteIds.has(Number(id)))
+      } catch (err) {
+        console.error('Error al verificar favorito:', err)
+      }
+    }
+
+    checkFavorite()
+  }, [user, id])
+
   const handleIncrease = () => {
     setQuantity((prev) => (prev < product.stock ? prev + 1 : prev))
   }
@@ -56,6 +82,25 @@ const ProductDetail = () => {
     addToCart(product, quantity)
     setAddedMessage(true)
     setTimeout(() => setAddedMessage(false), 2000)
+  }
+
+  const handleToggleFavorite = async () => {
+    if (!user) return
+    setFavLoading(true)
+
+    try {
+      if (isFavorite) {
+        await fetchWithAuth(`http://localhost:3000/favorites/${id}`, { method: 'DELETE' })
+        setIsFavorite(false)
+      } else {
+        await fetchWithAuth(`http://localhost:3000/favorites/${id}`, { method: 'POST' })
+        setIsFavorite(true)
+      }
+    } catch (err) {
+      console.error('Error al actualizar favorito:', err)
+    } finally {
+      setFavLoading(false)
+    }
   }
 
   if (loading) {
@@ -159,6 +204,20 @@ const ProductDetail = () => {
                 <><i className="bi bi-cart-plus"></i> Agregar al carrito</>
               )}
             </Button>
+
+            {/* Favorite button: only shown for logged-in users */}
+            {user && (
+              <Button
+                variant={isFavorite ? 'danger' : 'outline-danger'}
+                onClick={handleToggleFavorite}
+                disabled={favLoading}
+                title={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+              >
+                <i className={`bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'} me-1`}></i>
+                {isFavorite ? 'En favoritos' : 'Agregar a favoritos'}
+              </Button>
+            )}
+
             <Button variant="outline-secondary" onClick={() => navigate('/products')}>
               Volver a productos
             </Button>

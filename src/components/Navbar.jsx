@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Navbar as BsNavbar, Nav, Container, Badge, NavDropdown } from 'react-bootstrap'
 import { CartContext } from '../context/CartContext'
 import { AuthContext } from '../context/AuthContext'
+import useTheme from '../hooks/useTheme'
 import logo from '../assets/logo.png'
 
 const Navbar = () => {
 
   const { cart } = useContext(CartContext)
   const { user, logout } = useContext(AuthContext)
+  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0)
@@ -22,7 +24,6 @@ const Navbar = () => {
     <BsNavbar expand="lg" fixed="top">
       <Container>
 
-        {/* Logo image */}
         <BsNavbar.Brand as={Link} to="/">
           <img src={logo} alt="Victoria's Sound" />
         </BsNavbar.Brand>
@@ -39,11 +40,14 @@ const Navbar = () => {
               <span className="cart-icon-wrapper">
                 <i className="bi bi-cart3 fs-5"></i>
                 {totalItems > 0 && (
-                  <Badge className="cart-badge">
-                    {totalItems}
-                  </Badge>
+                  <Badge className="cart-badge">{totalItems}</Badge>
                 )}
               </span>
+            </Nav.Link>
+
+            {/* Theme toggle button */}
+            <Nav.Link onClick={toggleTheme} title={theme === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}>
+              <i className={`bi ${theme === 'dark' ? 'bi-sun' : 'bi-moon'} fs-5`}></i>
             </Nav.Link>
 
             {/* Admin panel link: admin and sysadmin only */}
@@ -72,6 +76,10 @@ const Navbar = () => {
                 </NavDropdown.Item>
                 <NavDropdown.Item as={Link} to="/mis-pedidos">
                   Mis pedidos
+                </NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/favorites">
+                  <i className="bi bi-heart-fill me-1 text-danger"></i>
+                  Mis favoritos
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleLogout}>

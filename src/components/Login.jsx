@@ -5,41 +5,44 @@ import { AuthContext } from '../context/AuthContext'
 
 const Login = () => {
 
-  // Get the login function from AuthContext
   const { login } = useContext(AuthContext)
-
-  // Hook to redirect the user after successful login
   const navigate = useNavigate()
 
-  // State for the email input
   const [email, setEmail] = useState('')
-
-  // State for the password input
   const [password, setPassword] = useState('')
-
-  // State for the error message
   const [error, setError] = useState(null)
-
-  // State for the loading indicator while the request is in progress
   const [loading, setLoading] = useState(false)
 
-  // Handler for form submission
+  const [touched, setTouched] = useState({ email: false, password: false })
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const isEmailValid = (mail) => emailRegex.test(mail)
+
+  const handleBlur = (field) => {
+    setTouched({ ...touched, [field]: true })
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-
-    // Clear previous errors
     setError(null)
+    setTouched({ email: true, password: true })
+
+    if (!isEmailValid(email)) {
+      setError('Ingresá un email válido.')
+      return
+    }
+
+    if (password.trim() === '') {
+      setError('Ingresá tu contraseña.')
+      return
+    }
+
     setLoading(true)
 
     try {
-      // Call the login function from AuthContext
       await login(email, password)
-
-      // If login was successful, redirect to products
       navigate('/products')
-
     } catch (err) {
-      // Show the error message returned by the API
       setError(err.message)
     } finally {
       setLoading(false)
@@ -50,30 +53,43 @@ const Login = () => {
     <Container className="mt-5" style={{ maxWidth: '400px' }}>
       <h2 className="mb-4">Iniciar sesión</h2>
 
-      {/* Show error message if login failed */}
-      {error && (
-        <Alert variant="danger">{error}</Alert>
-      )}
+      {error && <Alert variant="danger">{error}</Alert>}
 
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit} noValidate>
+
         <Form.Group className="mb-3">
-          <Form.Label>Email</Form.Label>
+          <Form.Label>
+            Email <span className="required-asterisk">*</span>
+          </Form.Label>
           <Form.Control
             type="email"
             placeholder="tu@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onBlur={() => handleBlur('email')}
+            isInvalid={touched.email && !isEmailValid(email)}
+            isValid={touched.email && isEmailValid(email)}
           />
+          <Form.Control.Feedback type="invalid">
+            Ingresá un email válido.
+          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group className="mb-3">
-          <Form.Label>Contraseña</Form.Label>
+          <Form.Label>
+            Contraseña <span className="required-asterisk">*</span>
+          </Form.Label>
           <Form.Control
             type="password"
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onBlur={() => handleBlur('password')}
+            isInvalid={touched.password && password.trim() === ''}
           />
+          <Form.Control.Feedback type="invalid">
+            Ingresá tu contraseña.
+          </Form.Control.Feedback>
         </Form.Group>
 
         <Button
@@ -84,6 +100,7 @@ const Login = () => {
         >
           {loading ? 'Ingresando...' : 'Ingresar'}
         </Button>
+
       </Form>
 
       <p className="mt-3 text-center">
